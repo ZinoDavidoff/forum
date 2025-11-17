@@ -20,7 +20,6 @@ import { Component } from '@angular/core';
 
     .main-content {
       flex: 1;
-      padding: var(--spacing-xl) 0;
     }
   `]
 })

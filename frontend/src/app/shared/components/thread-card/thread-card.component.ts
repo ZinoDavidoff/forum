@@ -15,8 +15,8 @@ import { Thread } from "../../../core/models/models";
           <span class="author-name">{{ thread.author.username }}</span>
           <span class="dot">•</span>
           <span class="time-ago">2h ago</span>
-          <span *ngIf="thread.isPinned" class="badge badge-pink">Pinned</span>
-          <span *ngIf="thread.isLocked" class="badge badge-blue">Locked</span>
+          <span *ngIf="thread.isPinned" class="badge badge-pink"><i-lucide name="pin" [size]="16"></i-lucide></span>
+          <span *ngIf="thread.isLocked" class="badge badge-blue"><i-lucide name="lock" [size]="16"></i-lucide></span>
         </div>
 
         <h3 class="thread-title">{{ thread.title }}</h3>
@@ -46,7 +46,7 @@ import { Thread } from "../../../core/models/models";
         gap: var(--spacing-sm);
         padding: var(--spacing-md);
         cursor: pointer;
-        margin-bottom: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
       }
 
       .thread-card:hover {
@@ -89,7 +89,6 @@ import { Thread } from "../../../core/models/models";
         color: var(--text-light);
         margin-bottom: var(--spacing-sm);
         font-size: 0.875rem;
-        line-height: 1.5;
       }
 
       .thread-actions {
@@ -114,6 +113,10 @@ import { Thread } from "../../../core/models/models";
 
       .action-btn:hover {
         background: var(--gray-100);
+      }
+
+      .badge {
+        margin-left: auto;
       }
     `,
   ],

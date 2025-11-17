@@ -78,9 +78,12 @@
 
   /* Shadows - More pronounced */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
   /* Border */
@@ -89,7 +92,6 @@
   --border-dark: 1px solid var(--gray-400);
 }
 
-
 * {
   margin: 0;
   padding: 0;
@@ -97,7 +99,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -148,7 +150,6 @@ a {
 
 a:hover {
   color: var(--primary-600);
-  text-decoration: underline;
 }
 
 /* Buttons */
@@ -189,12 +190,20 @@ a:hover {
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, var(--secondary-500), var(--secondary-600));
+  background: linear-gradient(
+    135deg,
+    var(--secondary-500),
+    var(--secondary-600)
+  );
   color: white;
 }
 
 .btn-secondary:hover {
-  background: linear-gradient(135deg, var(--secondary-600), var(--secondary-700));
+  background: linear-gradient(
+    135deg,
+    var(--secondary-600),
+    var(--secondary-700)
+  );
 }
 
 .btn-outline {
@@ -223,13 +232,12 @@ a:hover {
 .card {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  border: var(--border-light);
   margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: var(--border-light);
   transition: all 0.3s ease;
   box-shadow: var(--shadow-sm);
 }
-
 
 .card-header {
   border-bottom: var(--border-light);

@@ -159,7 +159,6 @@ import { Thread, Post } from "../../../core/models/models";
       }
 
       .thread-content {
-        line-height: 1.6;
         margin-bottom: var(--spacing-md);
         color: var(--text-dark);
       }
