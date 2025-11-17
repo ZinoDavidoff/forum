@@ -1,0 +1,133 @@
+<div class="home-page">
+  <div class="container">
+    <div class="reddit-layout">
+      <!-- Left Sidebar -->
+      <aside class="left-sidebar">
+        <div class="sidebar-widget card">
+          <h3>Popular Topics</h3>
+          <div class="topic-list">
+            <a
+              *ngFor="let category of categories.slice(0, 5)"
+              class="topic-item"
+              [routerLink]="['/']"
+              [queryParams]="{ categoryId: category.id }"
+            >
+              <i-lucide
+                [name]="category.icon || 'message-square'"
+                [size]="20"
+              ></i-lucide>
+              <span>{{ category.name }}</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sidebar-widget card">
+          <h3>Community Info</h3>
+          <p class="small-text">
+            A place for meaningful discussions and community support.
+          </p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-feed">
+        <div class="create-post-card card">
+          <img
+            [src]="currentUser?.avatar || 'assets/default-avatar.png'"
+            alt="avatar"
+            class="avatar"
+            *ngIf="currentUser"
+          />
+          <input
+            type="text"
+            placeholder="Create Post"
+            class="create-input"
+            routerLink="/threads/create"
+            readonly
+          />
+          <button class="icon-btn" routerLink="/threads/create">
+            <i-lucide name="image-plus" [size]="20"></i-lucide>
+          </button>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active">
+            <i-lucide name="flame" [size]="18"></i-lucide> Hot
+          </button>
+          <button class="filter-tab">
+            <i-lucide name="star" [size]="18"></i-lucide> New
+          </button>
+          <button class="filter-tab">
+            <i-lucide name="trending-up" [size]="18"></i-lucide> Top
+          </button>
+        </div>
+
+        <div class="threads-list">
+          <app-thread-card
+            *ngFor="let thread of featuredThreads"
+            [thread]="thread"
+          ></app-thread-card>
+        </div>
+      </main>
+
+      <!-- Right Sidebar -->
+      <aside class="right-sidebar">
+        <div class="sidebar-widget card">
+          <h3>About Community</h3>
+          <p class="small-text">
+            Welcome to our forum! Connect with others, share experiences, and
+            build lasting friendships.
+          </p>
+          <div class="community-stats">
+            <div class="stat">
+              <div class="stat-value">12.5K</div>
+              <div class="stat-label">Members</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">2.3K</div>
+              <div class="stat-label">Online</div>
+            </div>
+          </div>
+          <button
+            class="btn btn-primary w-100"
+            routerLink="/register"
+            *ngIf="!currentUser"
+          >
+            Join Community
+          </button>
+          <button
+            class="btn btn-primary w-100"
+            routerLink="/threads/create"
+            *ngIf="currentUser"
+          >
+            Create Post
+          </button>
+        </div>
+
+        <div class="sidebar-widget card">
+          <h3>Forum Rules</h3>
+          <ol class="rules-list">
+            <li>Be respectful and kind</li>
+            <li>No spam or self-promotion</li>
+            <li>Keep discussions on topic</li>
+            <li>Report inappropriate content</li>
+          </ol>
+        </div>
+
+        <div class="sidebar-widget card">
+          <h3>Moderators</h3>
+          <div class="moderator-list">
+            <div class="moderator-item">
+              <img
+                src="assets/default-avatar.png"
+                alt="mod"
+                class="avatar avatar-sm"
+              />
+              <span>Admin</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="auth-page">
+  <div class="container">
+    <div class="auth-container card">
+      <div class="auth-header">
+        <h2><i-lucide name="user" [size]="32"></i-lucide> Welcome Back!</h2>
+        <p>Login to continue your journey with our community</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="your@email.com"
+          />
+          <div
+            class="error"
+            *ngIf="
+              loginForm.get('email')?.invalid && loginForm.get('email')?.touched
+            "
+          >
+            Please enter a valid email
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <div
+            class="error"
+            *ngIf="
+              loginForm.get('password')?.invalid &&
+              loginForm.get('password')?.touched
+            "
+          >
+            Password must be at least 6 characters
+          </div>
+        </div>
+
+        <div class="error" *ngIf="error">{{ error }}</div>
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg"
+          [disabled]="loginForm.invalid || loading"
+        >
+          {{ loading ? "Logging in..." : "Login" }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a routerLink="/register">Join us!</a></p>
+      </div>
+    </div>
+  </div>
+</div>

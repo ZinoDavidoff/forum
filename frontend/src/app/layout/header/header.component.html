@@ -1,0 +1,56 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a routerLink="/">
+          <i-lucide name="message-circle" class="logo-icon"></i-lucide>
+          <span class="logo-text">Forum</span>
+        </a>
+      </div>
+
+      <div class="search-bar">
+        <i-lucide name="search" [size]="20" class="search-icon"></i-lucide>
+        <input type="text" placeholder="Search..." class="search-input" />
+      </div>
+
+      <div class="header-actions">
+        <div *ngIf="currentUser; else loginButtons" class="user-menu">
+          <button class="btn btn-primary" routerLink="/threads/create">
+            <i-lucide name="plus" [size]="18"></i-lucide>
+          </button>
+          <button class="icon-btn" routerLink="/messages">
+            <i-lucide name="mail" [size]="20"></i-lucide>
+          </button>
+          <button class="icon-btn" routerLink="/notifications">
+            <i-lucide name="bell" [size]="20"></i-lucide>
+          </button>
+          <div class="user-avatar" (click)="toggleMenu()">
+            <img
+              [src]="currentUser.avatar || 'assets/default-avatar.png'"
+              [alt]="currentUser.username"
+              class="avatar"
+            />
+          </div>
+          <div class="dropdown-menu" *ngIf="isMenuOpen">
+            <a [routerLink]="['/profile', currentUser.id]" class="dropdown-item"
+              ><i-lucide name="user" [size]="18"></i-lucide> My Profile</a
+            >
+            <a routerLink="/settings" class="dropdown-item"
+              ><i-lucide name="settings" [size]="18"></i-lucide> Settings</a
+            >
+            <hr />
+            <button (click)="logout()" class="dropdown-item logout-btn">
+              <i-lucide name="log-out" [size]="18"></i-lucide> Logout
+            </button>
+          </div>
+        </div>
+        <ng-template #loginButtons>
+          <button class="btn btn-outline" routerLink="/login">Log In</button>
+          <button class="btn btn-primary" routerLink="/register">
+            Sign Up
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</header>

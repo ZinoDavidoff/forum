@@ -1,0 +1,100 @@
+<div class="auth-page">
+  <div class="container">
+    <div class="auth-container card">
+      <div class="auth-header">
+        <h2>
+          <i-lucide name="party-popper" [size]="32"></i-lucide> Join Our
+          Community!
+        </h2>
+        <p>Create an account to connect with other amazing mothers</p>
+      </div>
+
+      <form
+        [formGroup]="registerForm"
+        (ngSubmit)="onSubmit()"
+        class="auth-form"
+      >
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="Choose a username"
+          />
+          <div
+            class="error"
+            *ngIf="
+              registerForm.get('username')?.invalid &&
+              registerForm.get('username')?.touched
+            "
+          >
+            Username must be at least 3 characters
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="your@email.com"
+          />
+          <div
+            class="error"
+            *ngIf="
+              registerForm.get('email')?.invalid &&
+              registerForm.get('email')?.touched
+            "
+          >
+            Please enter a valid email
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fullName">Full Name (Optional)</label>
+          <input
+            type="text"
+            id="fullName"
+            formControlName="fullName"
+            placeholder="Your name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <div
+            class="error"
+            *ngIf="
+              registerForm.get('password')?.invalid &&
+              registerForm.get('password')?.touched
+            "
+          >
+            Password must be at least 6 characters
+          </div>
+        </div>
+
+        <div class="error" *ngIf="error">{{ error }}</div>
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg"
+          [disabled]="registerForm.invalid || loading"
+        >
+          {{ loading ? "Creating Account..." : "Create Account" }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a routerLink="/login">Login here</a></p>
+      </div>
+    </div>
+  </div>
+</div>
