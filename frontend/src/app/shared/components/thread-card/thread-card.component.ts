@@ -106,15 +106,15 @@ import { Thread } from "../../../core/models/models";
         display: flex;
         align-items: center;
         gap: 4px;
-        padding: 4px 8px;
+        padding: 2px 8px;
         background: none;
         border: none;
-        border-radius: var(--radius-md);
+        border-radius: 2px;
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-light);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.1s ease;
       }
 
       .action-btn:hover {

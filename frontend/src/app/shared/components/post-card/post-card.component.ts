@@ -42,7 +42,7 @@ import { PostService } from "../../../core/services/post.service";
           <!-- Show collapsed state with expand button -->
           <button
             *ngIf="!showReplies"
-            class="expand-replies-btn"
+            class="action-btn expand-replies-btn"
             (click)="loadAndShowReplies()"
             [disabled]="loadingReplies"
           >
@@ -56,7 +56,7 @@ import { PostService } from "../../../core/services/post.service";
 
           <!-- Show expanded replies -->
           <div *ngIf="showReplies && post.replies && post.replies.length > 0">
-            <button class="collapse-replies-btn" (click)="toggleReplies()">
+            <button class="action-btn collapse-replies-btn" (click)="toggleReplies()">
               <i-lucide name="corner-down-right" [size]="14"></i-lucide>
               Hide {{ post.replyCount }}
               {{ post.replyCount === 1 ? "reply" : "replies" }}
@@ -155,29 +155,15 @@ import { PostService } from "../../../core/services/post.service";
         background: var(--gray-100);
       }
 
+      /*
       .action-btn:first-child {
         padding: 2px 4px;
       }
+      */
 
       .nested-replies {
         margin-left: 0;
         padding-left: 0;
-      }
-
-      .expand-replies-btn {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 8px;
-        margin: 4px 0;
-        background: none;
-        border: none;
-        border-radius: 2px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--reddit-orange);
-        cursor: pointer;
-        transition: all 0.1s ease;
       }
 
       .expand-replies-btn:hover:not(:disabled) {
@@ -187,22 +173,6 @@ import { PostService } from "../../../core/services/post.service";
       .expand-replies-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-      }
-
-      .collapse-replies-btn {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 8px;
-        margin: 4px 0 8px 0;
-        background: none;
-        border: none;
-        border-radius: 2px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--text-light);
-        cursor: pointer;
-        transition: all 0.1s ease;
       }
 
       .collapse-replies-btn:hover {

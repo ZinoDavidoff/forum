@@ -71,7 +71,7 @@ import { Thread, Post } from "../../../core/models/models";
                 <!-- Load More Button -->
                 <div class="load-more-container" *ngIf="hasMorePosts">
                   <button
-                    class="load-more-btn"
+                    class="action-btn load-more-btn"
                     (click)="loadMorePosts()"
                     [disabled]="loadingMore"
                   >
@@ -239,19 +239,23 @@ import { Thread, Post } from "../../../core/models/models";
         padding: var(--spacing-md) 0;
       }
 
-      .load-more-btn {
+      .action-btn {
         display: flex;
         align-items: center;
         gap: 4px;
-        padding: 4px 8px;
-        background: none;
+        padding: 6px 12px;
         border: none;
-        border-radius: 2px;
-        font-size: 0.75rem;
+        background: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
         font-weight: 700;
-        color: var(--reddit-orange);
+        color: var(--primary);
         cursor: pointer;
-        transition: all 0.1s ease;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: var(--gray-100);
       }
 
       .load-more-btn:hover:not(:disabled) {
