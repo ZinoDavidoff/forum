@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-root',
+  selector: "app-root",
   template: `
     <div class="app-container">
       <app-header></app-header>
@@ -11,18 +11,21 @@ import { Component } from '@angular/core';
       <app-footer></app-footer>
     </div>
   `,
-  styles: [`
-    .app-container {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+  styles: [
+    `
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-    .main-content {
-      flex: 1;
-    }
-  `]
+      .main-content {
+        flex: 1;
+        padding-top: 73px;
+      }
+    `,
+  ],
 })
 export class AppComponent {
-  title = 'Mommy Forum';
+  title = "Mommy Forum";
 }

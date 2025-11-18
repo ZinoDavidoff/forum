@@ -55,7 +55,7 @@ import { Thread, Post } from "../../../core/models/models";
               </div>
 
               <div class="comments-section">
-                <div class="comment-sort">
+                <div class="comment-sort card">
                   <button class="sort-btn active">Best</button>
                   <button class="sort-btn">Top</button>
                   <button class="sort-btn">New</button>
@@ -94,14 +94,14 @@ import { Thread, Post } from "../../../core/models/models";
       .reddit-layout {
         display: grid;
         grid-template-columns: 250px 1fr 312px;
-        gap: var(--spacing-lg);
-        padding: var(--spacing-lg) 0;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) 0;
       }
 
       .left-sidebar,
       .right-sidebar {
         position: sticky;
-        top: 72px;
+        top: 89px;
         height: fit-content;
       }
 
@@ -129,7 +129,7 @@ import { Thread, Post } from "../../../core/models/models";
       }
 
       .thread-post {
-        padding: var(--spacing-lg);
+        padding: var(--spacing-md);
         margin-bottom: var(--spacing-md);
       }
 
@@ -184,12 +184,8 @@ import { Thread, Post } from "../../../core/models/models";
 
       .comment-sort {
         display: flex;
-        gap: var(--spacing-xs);
-        margin-bottom: var(--spacing-md);
-        padding: var(--spacing-xs);
-        background: white;
-        border: var(--border);
-        border-radius: var(--radius-md);
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
       }
 
       .sort-btn {
