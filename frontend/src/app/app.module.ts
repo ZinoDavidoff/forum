@@ -73,6 +73,9 @@ import { UserCardComponent } from "./shared/components/user-card/user-card.compo
 import { CategoryBadgeComponent } from "./shared/components/category-badge/category-badge.component";
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 
+// Pipes
+import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -93,6 +96,7 @@ import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loa
     UserCardComponent,
     CategoryBadgeComponent,
     LoadingSpinnerComponent,
+    TimeAgoPipe,
   ],
   imports: [
     BrowserModule,

@@ -33,9 +33,7 @@ import { Thread, Post } from "../../../core/models/models";
                       thread.author.username
                     }}</span>
                     <div class="post-time">
-                      <span class="time-ago">{{
-                        thread.createdAt | date : "short"
-                      }}</span>
+                      <span class="time-ago">{{ thread.createdAt | timeAgo }}</span>
                     </div>
                   </div>
                 </div>

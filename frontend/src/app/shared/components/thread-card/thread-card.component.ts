@@ -14,7 +14,7 @@ import { Thread } from "../../../core/models/models";
           />
           <span class="author-name">{{ thread.author.username }}</span>
           <span class="dot">•</span>
-          <span class="time-ago">2h ago</span>
+          <span class="time-ago">{{ thread.createdAt | timeAgo }}</span>
           <div class="badge-container">
             <span *ngIf="thread.isPinned" class="badge badge-pink"><i-lucide name="pin" [size]="16"></i-lucide></span>
             <span *ngIf="thread.isLocked" class="badge badge-blue"><i-lucide name="lock" [size]="16"></i-lucide></span>
