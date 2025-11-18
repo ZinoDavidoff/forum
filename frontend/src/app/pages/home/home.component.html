@@ -68,6 +68,24 @@
             [thread]="thread"
           ></app-thread-card>
         </div>
+
+        <!-- Load More Button -->
+        <div class="load-more-container" *ngIf="hasMoreThreads">
+          <button
+            class="load-more-btn"
+            (click)="loadMoreThreads()"
+            [disabled]="loadingMore"
+          >
+            <i-lucide
+              name="loader-2"
+              [size]="16"
+              *ngIf="loadingMore"
+              class="spinner"
+            ></i-lucide>
+            <span *ngIf="!loadingMore"> View More Posts </span>
+            <span *ngIf="loadingMore">Loading...</span>
+          </button>
+        </div>
       </main>
 
       <!-- Right Sidebar -->

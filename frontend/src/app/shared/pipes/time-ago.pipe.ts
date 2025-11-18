@@ -1,17 +1,17 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from "@angular/core";
 
 @Pipe({
-  name: 'timeAgo'
+  name: "timeAgo",
 })
 export class TimeAgoPipe implements PipeTransform {
   transform(value: string | Date): string {
-    if (!value) return '';
+    if (!value) return "";
 
     const now = new Date();
     const past = new Date(value);
     const secondsAgo = Math.floor((now.getTime() - past.getTime()) / 1000);
 
-    if (secondsAgo < 0) return 'just now';
+    if (secondsAgo < 0) return "just now";
 
     const intervals = {
       year: 31536000,
@@ -20,11 +20,11 @@ export class TimeAgoPipe implements PipeTransform {
       day: 86400,
       hour: 3600,
       minute: 60,
-      second: 1
+      second: 1,
     };
 
     if (secondsAgo < 10) {
-      return 'just now';
+      return "just now";
     }
 
     if (secondsAgo < 60) {

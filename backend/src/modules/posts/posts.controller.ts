@@ -28,6 +28,11 @@ export class PostsController {
     return this.postsService.findByThread(threadId, page, limit);
   }
 
+  @Get(":id/replies")
+  findReplies(@Param("id") id: string) {
+    return this.postsService.findReplies(id);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.postsService.findOne(id);

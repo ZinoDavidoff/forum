@@ -170,6 +170,49 @@
   color: var(--text-dark);
 }
 
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-md) 0;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--reddit-orange);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 1024px) {
   .reddit-layout {
     grid-template-columns: 1fr 312px;

@@ -16,8 +16,12 @@ import { Thread } from "../../../core/models/models";
           <span class="dot">•</span>
           <span class="time-ago">{{ thread.createdAt | timeAgo }}</span>
           <div class="badge-container">
-            <span *ngIf="thread.isPinned" class="badge badge-pink"><i-lucide name="pin" [size]="16"></i-lucide></span>
-            <span *ngIf="thread.isLocked" class="badge badge-blue"><i-lucide name="lock" [size]="16"></i-lucide></span>
+            <span *ngIf="thread.isPinned" class="badge badge-pink"
+              ><i-lucide name="pin" [size]="16"></i-lucide
+            ></span>
+            <span *ngIf="thread.isLocked" class="badge badge-blue"
+              ><i-lucide name="lock" [size]="16"></i-lucide
+            ></span>
           </div>
         </div>
 
@@ -52,9 +56,9 @@ import { Thread } from "../../../core/models/models";
       }
 
       .thread-card:hover {
-          box-shadow: var(--shadow-lg);
-          transform: translateY(-2px);
-          border-color: var(--primary-200);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+        border-color: var(--primary-200);
       }
 
       .thread-content {

@@ -856,6 +856,176 @@ async function seed() {
           },
         ],
       },
+      // Large thread with many nested replies for pagination testing
+      {
+        category: categories[3],
+        author: users[7], // mia_sleepcoach
+        title: "ULTIMATE Sleep Training Guide - Ask Me Anything!",
+        slug: "ultimate-sleep-training-guide-ama",
+        content:
+          "Hi everyone! 👋 I'm a certified sleep consultant and have been helping families for 5 years. I wanted to create this mega-thread where you can ask me anything about baby sleep!\n\n✨ Common topics I can help with:\n- Sleep training methods (gentle, gradual, cry it out)\n- Age-appropriate schedules\n- Nap transitions\n- Night wakings\n- Early rising\n- Sleep regressions\n- Creating healthy sleep habits\n\nFeel free to ask anything! I'll answer all questions and would love other experienced moms to share their tips too! 💙💤",
+        tags: ["sleep-training", "ama", "sleep-consultant", "expert-advice"],
+        isPinned: true,
+        isFeatured: true,
+        viewCount: 1247,
+        posts: Array.from({ length: 30 }, (_, i) => ({
+          author: users[(i % 8) + 2], // Rotate through users 2-9
+          content: [
+            "Thank you so much for doing this! My 6-month-old wakes every 2 hours. Is this normal? When can I start sleep training?",
+            "What's your opinion on cry it out vs gentle methods? I'm so torn!",
+            "My baby will only sleep if I'm holding her. How do I break this habit?",
+            "4-month sleep regression has destroyed us! How long does it last?",
+            "Is it too early to sleep train at 4 months? She's rolling both ways now.",
+            "My 8-month-old is still feeding 3 times a night. Is this a habit or hunger?",
+            "Help! My baby wakes at 5am every day. How do I fix early rising?",
+            "What's the best bedtime for a 7-month-old? Currently doing 8pm but she wakes at 5:30am.",
+            "My toddler (18 months) suddenly won't go to bed without a huge fight. Regression?",
+            "Room temperature for sleep - what's ideal? Our house gets cold at night.",
+            "White noise - yes or no? Will my baby become dependent on it?",
+            "How many naps should a 9-month-old have? We're struggling with the transition.",
+            "Dummy/pacifier for sleep - good or bad? Ours wakes when it falls out.",
+            "My baby sleeps great at night but fights every nap. Any tips?",
+            "Co-sleeping safely - can you give advice or is it too controversial?",
+            "Dream feed - worth it? Or does it disrupt sleep more?",
+            "How dark should the room be? Blackout curtains or some light ok?",
+            "Bedtime routine for a 5-month-old - what do you recommend?",
+            "Sleep sack vs swaddle - when to transition?",
+            "My twins have different sleep needs. How do I manage this?",
+            "Separation anxiety at bedtime (10 months) - will sleep training help?",
+            "How long should bedtime routine take? Ours is 90 minutes!",
+            "Cat naps only - my baby won't nap longer than 30 mins. Help!",
+            "Overtired vs undertired - how can you tell the difference?",
+            "Sleep training while teething - should I wait?",
+            "My baby seems to need less sleep than recommended. Is that ok?",
+            "Transfer to crib without waking - any tricks?",
+            "Sleep training with reflux - any special considerations?",
+            "Second child different sleep needs than first - why?!",
+            "Success story: We sleep trained at 6 months and it changed our lives!",
+          ][i],
+          replies:
+            i < 15
+              ? [
+                  {
+                    author: users[7], // sleep coach responding
+                    content: [
+                      "Great question! At 6 months, waking every 2 hours is exhausting but can be normal if baby is going through a developmental leap or teething. You can absolutely start gentle sleep training now. Start with a consistent bedtime routine and putting baby down drowsy but awake. What's your current routine like?",
+                      "Both methods can work! It really depends on your parenting style and your baby's temperament. Cry it out (Ferber) is faster (usually 3-7 days) but harder emotionally. Gentle methods like pick-up-put-down or chair method take longer (2-4 weeks) but feel better for some parents. What feels right to you?",
+                      "This is so common! Start gradually. First, get her used to being put down drowsy but awake after contact naps. Then work on putting her down more awake each time. The key is consistency and patience. It might take 2-3 weeks but you'll get there!",
+                      "The 4-month regression is tough because it's actually permanent - baby's sleep cycles are maturing to be more like adults. The 'regression' part (frequent waking) usually lasts 2-4 weeks. Keep routines consistent and it will settle! This is actually a great time to establish good habits.",
+                      "4 months is perfect to start if she's rolling both ways! That's the key milestone. You can begin with gentle methods or even more structured approaches. Just make sure she's at a healthy weight and your pediatrician approves. What method are you considering?",
+                      "At 8 months, most babies can go 11-12 hours without feeding (assuming healthy weight gain). Those night feeds are likely habit. Try gradually reducing the amount/time of night feeds over a week. Many babies naturally drop them when you remove the sleep association!",
+                      "Early rising is SO hard! A few things to check: 1) Bedtime not too early (usually 7-8pm is ideal), 2) Room is very dark (even a crack of light can wake them), 3) Try not to respond until 6am (or your desired wake time) to avoid reinforcing the early wake. What time is bedtime currently?",
+                      "5:30am wake with 8pm bedtime is actually pretty good - that's 9.5 hours! But if you want later morning, try shifting bedtime to 7:30pm. Also make sure the room is pitch black - early morning light is a common culprit. What's the sleep environment like?",
+                      "18 months is a classic regression age! They're learning so much and becoming more independent. Stick to your routine, be consistent, and patient. It usually passes in 2-4 weeks. Is anything else changing in their life?",
+                      "Ideal room temperature is 16-20°C (60-68°F). Dress baby in appropriate layers - you can use a TOG guide for sleep sacks. Babies sleep better slightly cool than too warm. What temperature is your room?",
+                      "I'm pro white noise! It helps mask household sounds and can be very soothing. Most babies don't become dependent - it's just a helpful sleep association. Use it consistently for all sleep and it works great!",
+                      "9 months is typically 2 naps (morning and afternoon). The 3-to-2 nap transition usually happens between 6-9 months. Watch for baby staying awake longer and fighting the third nap. What's the current schedule?",
+                      "Dummies can be helpful for falling asleep but can become a problem if baby can't replace it themselves. At around 8-9 months, babies can learn to find and replace it themselves. You can practice during the day! Or you could consider removing it altogether.",
+                      "This is really common! Night sleep is easier than naps because the sleep pressure is higher. For naps, ensure age-appropriate wake windows, dark room, white noise, and same routine as bedtime (just shorter). What's the nap routine currently?",
+                      "I support safe co-sleeping if it works for your family! Follow the Safe Sleep 7 guidelines. However, I also help families transition to crib if that's the goal. What would you like help with specifically?",
+                    ][i],
+                    replies: [
+                      {
+                        author: users[(i % 6) + 3],
+                        content: [
+                          "Thank you! Our routine is bath, bottle, bed. She falls asleep during the bottle - is that a problem?",
+                          "I think I want to try gradual methods. The idea of leaving her to cry really doesn't sit right with me.",
+                          "That makes sense! We'll try it gradually. How do I handle the crying when I put her down?",
+                          "This is really helpful! So the frequent waking will improve even without sleep training?",
+                          "We were thinking of trying the chair method. Have you had success with that?",
+                          "Wow, I didn't realize they could go that long! We'll try reducing the feeds. Should I do it all at once or one feed at a time?",
+                          "Bedtime is 7:30pm. The room has blackout curtains but there might be some light coming through. I'll get better ones!",
+                          "The room isn't very dark actually - we have a nightlight. Could that be it?",
+                          "She just started daycare actually! Could that be why?",
+                          "It's about 18°C. She wears a sleep sack - is that enough?",
+                          "That's reassuring! What volume should the white noise be at?",
+                          "Currently doing 3 short naps. She fights the third one now. Time to drop it?",
+                          "She's only 6 months so can't find it herself yet. Maybe we should ditch it?",
+                          "We basically just put her in the cot with no routine for naps. Should we do the same as bedtime?",
+                          "I'd like to move her to her own cot but I'm worried about the transition.",
+                        ][i],
+                        replies:
+                          i < 10
+                            ? [
+                                {
+                                  author: users[7],
+                                  content: [
+                                    "Yes, falling asleep during feeding is a sleep association. Try moving the bottle earlier in the routine - bath, bottle, book, then bed. Keep her awake during and after the bottle. This is key!",
+                                    "Perfect! The chair method is a great gradual approach. You sit by the crib and gradually move the chair further away each few nights until you're out of the room. Patience is key!",
+                                    "Gradual withdrawal is about being present but not engaging too much. Stay calm, offer reassurance with your voice or gentle touch, but don't pick up unless truly distressed. It's hard at first but gets easier!",
+                                    "It should improve yes! But establishing good sleep habits now will help tremendously. Independent sleep skills are so valuable!",
+                                    "Chair method works great! It takes 2-3 weeks usually but many parents prefer it. Start with the chair right by the crib and move it every 2-3 nights. Be prepared to be patient!",
+                                    "One feed at a time is gentler! Start with the earliest night feed and reduce by 1oz/1min every 2-3 nights until gone, then move to the next one.",
+                                    "Blackout curtains make such a difference! Even the smallest light can trigger waking. Also check for any LED lights in the room. You should barely be able to see your hand in front of your face!",
+                                    "The nightlight could definitely be the culprit! Try removing it and see if that helps. Red light is least disruptive if you need some light.",
+                                    "Absolutely! Daycare is a huge change. The bedtime battles are probably related. Extra cuddles, consistency with routine, and it should settle in 2-3 weeks.",
+                                    "That's a good temperature! The sleep sack should be fine - check the TOG rating. 2.5 TOG is good for that temperature with just a vest/bodysuit underneath.",
+                                  ][i],
+                                  replies:
+                                    i < 5
+                                      ? [
+                                          {
+                                            author: users[(i % 6) + 3],
+                                            content: [
+                                              "This is brilliant advice! We'll start tonight. Will update you on progress!",
+                                              "Starting this weekend! Wish us luck. I'll report back!",
+                                              "Thank you so much! This gives me confidence to try.",
+                                              "You've been so helpful! I feel much better about this now.",
+                                              "Perfect! We'll try this approach. Thank you!",
+                                            ][i],
+                                          },
+                                        ]
+                                      : [],
+                                },
+                              ]
+                            : [],
+                      },
+                      {
+                        author: users[(i % 5) + 4],
+                        content: [
+                          "Not OP but this is such helpful advice! Following this thread.",
+                          "I had the same question! Thank you for answering.",
+                          "This thread is gold! Screenshot everything!",
+                          "So helpful! My question is similar.",
+                          "Thank you for sharing your expertise!",
+                          "This is exactly what I needed to hear!",
+                          "You're amazing for doing this AMA!",
+                          "Saving this whole thread for future reference!",
+                          "Can't thank you enough for this advice!",
+                          "This community is the best! So much helpful info.",
+                          "I wish I'd found this thread months ago!",
+                          "Following! So much good information here.",
+                          "This should be pinned! So useful.",
+                          "You're a lifesaver! Literally.",
+                          "Best thread I've seen on here!",
+                        ][i],
+                      },
+                    ],
+                  },
+                  {
+                    author: users[(i % 7) + 2],
+                    content: [
+                      "Following this! We have the same issue.",
+                      "I was wondering the same thing!",
+                      "Same boat here! Can't wait to see the response.",
+                      "This is our struggle too!",
+                      "Glad someone asked this!",
+                      "Yes! This is exactly our problem.",
+                      "Same here! Following for advice.",
+                      "We're dealing with this right now too!",
+                      "Same question! Thank you for asking.",
+                      "This is so relatable!",
+                      "Following! In the same situation.",
+                      "Could have written this myself!",
+                      "Same! Eager to hear the response.",
+                      "We're struggling with this too.",
+                      "Great question! Following.",
+                    ][i],
+                  },
+                ]
+              : [],
+        })),
+      },
     ];
 
     let totalThreads = 0;

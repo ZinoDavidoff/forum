@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
+import { switchMap } from "rxjs/operators";
 import { ThreadService } from "../../../core/services/thread.service";
 import { PostService } from "../../../core/services/post.service";
 import { Thread, Post } from "../../../core/models/models";
@@ -33,7 +34,9 @@ import { Thread, Post } from "../../../core/models/models";
                       thread.author.username
                     }}</span>
                     <div class="post-time">
-                      <span class="time-ago">{{ thread.createdAt | timeAgo }}</span>
+                      <span class="time-ago">{{
+                        thread.createdAt | timeAgo
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -64,6 +67,24 @@ import { Thread, Post } from "../../../core/models/models";
                   *ngFor="let post of posts"
                   [post]="post"
                 ></app-post-card>
+
+                <!-- Load More Button -->
+                <div class="load-more-container" *ngIf="hasMorePosts">
+                  <button
+                    class="load-more-btn"
+                    (click)="loadMorePosts()"
+                    [disabled]="loadingMore"
+                  >
+                    <i-lucide
+                      name="loader-2"
+                      [size]="16"
+                      *ngIf="loadingMore"
+                      class="spinner"
+                    ></i-lucide>
+                    <span *ngIf="!loadingMore"> View More Comments </span>
+                    <span *ngIf="loadingMore">Loading...</span>
+                  </button>
+                </div>
               </div>
             </div>
             <app-loading-spinner *ngIf="loading"></app-loading-spinner>
@@ -212,6 +233,49 @@ import { Thread, Post } from "../../../core/models/models";
         color: var(--text-dark);
       }
 
+      .load-more-container {
+        display: flex;
+        justify-content: center;
+        padding: var(--spacing-md) 0;
+      }
+
+      .load-more-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: none;
+        border: none;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--reddit-orange);
+        cursor: pointer;
+        transition: all 0.1s ease;
+      }
+
+      .load-more-btn:hover:not(:disabled) {
+        background: var(--gray-100);
+      }
+
+      .load-more-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       @media (max-width: 1024px) {
         .reddit-layout {
           grid-template-columns: 1fr 312px;
@@ -242,6 +306,10 @@ export class ThreadDetailComponent implements OnInit {
   thread: Thread | null = null;
   posts: Post[] = [];
   loading = true;
+  loadingMore = false;
+  currentPage = 1;
+  totalPosts = 0;
+  lastPage = 1;
 
   constructor(
     private route: ActivatedRoute,
@@ -251,38 +319,67 @@ export class ThreadDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.params["id"];
-    this.loadThread(id);
+    this.loadThreadData(id);
   }
 
   getTotalCommentCount(): number {
-    return this.countAllPosts(this.posts);
+    return this.totalPosts || this.posts.length;
   }
 
-  private countAllPosts(posts: Post[]): number {
-    let count = 0;
-    for (const post of posts) {
-      count++; // Count this post
-      if (post.replies && post.replies.length > 0) {
-        count += this.countAllPosts(post.replies); // Recursively count nested replies
-      }
+  get hasMorePosts(): boolean {
+    return this.currentPage < this.lastPage;
+  }
+
+  loadThreadData(id: string) {
+    this.loading = true;
+    this.currentPage = 1;
+    this.threadService
+      .getThread(id)
+      .pipe(
+        switchMap((thread) => {
+          this.thread = thread;
+          return this.postService.getPostsByThread(id, this.currentPage);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.posts = response.data.map((post: Post) => ({
+            ...post,
+            replies: [], // Initialize with empty replies for lazy loading
+          }));
+          this.totalPosts = response.total;
+          this.lastPage = response.lastPage;
+          this.currentPage = response.page;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error("Error loading thread data:", error);
+          this.loading = false;
+        },
+      });
+  }
+
+  loadMorePosts() {
+    if (!this.thread || this.loadingMore || !this.hasMorePosts) {
+      return;
     }
-    return count;
-  }
 
-  loadThread(id: string) {
-    this.threadService.getThread(id).subscribe({
-      next: (thread) => {
-        this.thread = thread;
-        this.loadPosts(id);
-      },
-    });
-  }
+    this.loadingMore = true;
+    const nextPage = this.currentPage + 1;
 
-  loadPosts(threadId: string) {
-    this.postService.getPostsByThread(threadId).subscribe({
+    this.postService.getPostsByThread(this.thread.id, nextPage).subscribe({
       next: (response) => {
-        this.posts = response.data;
-        this.loading = false;
+        const newPosts = response.data.map((post: Post) => ({
+          ...post,
+          replies: [], // Initialize with empty replies for lazy loading
+        }));
+        this.posts = [...this.posts, ...newPosts];
+        this.currentPage = response.page;
+        this.loadingMore = false;
+      },
+      error: (error) => {
+        console.error("Error loading more posts:", error);
+        this.loadingMore = false;
       },
     });
   }

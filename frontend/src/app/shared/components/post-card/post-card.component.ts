@@ -1,5 +1,6 @@
 import { Component, Input } from "@angular/core";
 import { Post } from "../../../core/models/models";
+import { PostService } from "../../../core/services/post.service";
 
 @Component({
   selector: "app-post-card",
@@ -17,7 +18,7 @@ import { Post } from "../../../core/models/models";
         <div class="comment-header">
           <span class="author-name">{{ post.author.username }}</span>
           <span class="dot">•</span>
-          <span class="post-time">{{ post.createdAt | date : "short" }}</span>
+          <span class="post-time">{{ post.createdAt | timeAgo }}</span>
         </div>
         <div class="comment-content" [innerHTML]="post.content"></div>
         <div class="comment-actions">
@@ -37,23 +38,29 @@ import { Post } from "../../../core/models/models";
         </div>
 
         <!-- Nested Replies -->
-        <div
-          class="nested-replies"
-          *ngIf="post.replies && post.replies.length > 0"
-        >
+        <div class="nested-replies" *ngIf="post.replyCount > 0">
           <!-- Show collapsed state with expand button -->
           <button
             *ngIf="!showReplies"
             class="expand-replies-btn"
-            (click)="toggleReplies()"
+            (click)="loadAndShowReplies()"
+            [disabled]="loadingReplies"
           >
             <i-lucide name="corner-down-right" [size]="14"></i-lucide>
-            View {{ getTotalNestedCount() }}
-            {{ getTotalNestedCount() === 1 ? "reply" : "replies" }}
+            <span *ngIf="!loadingReplies">
+              View {{ post.replyCount }}
+              {{ post.replyCount === 1 ? "reply" : "replies" }}
+            </span>
+            <span *ngIf="loadingReplies">Loading...</span>
           </button>
 
           <!-- Show expanded replies -->
-          <div *ngIf="showReplies">
+          <div *ngIf="showReplies && post.replies && post.replies.length > 0">
+            <button class="collapse-replies-btn" (click)="toggleReplies()">
+              <i-lucide name="corner-down-right" [size]="14"></i-lucide>
+              Hide {{ post.replyCount }}
+              {{ post.replyCount === 1 ? "reply" : "replies" }}
+            </button>
             <app-post-card
               *ngFor="let reply of post.replies"
               [post]="reply"
@@ -173,7 +180,32 @@ import { Post } from "../../../core/models/models";
         transition: all 0.1s ease;
       }
 
-      .expand-replies-btn:hover {
+      .expand-replies-btn:hover:not(:disabled) {
+        background: var(--gray-100);
+      }
+
+      .expand-replies-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .collapse-replies-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        margin: 4px 0 8px 0;
+        background: none;
+        border: none;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all 0.1s ease;
+      }
+
+      .collapse-replies-btn:hover {
         background: var(--gray-100);
       }
     `,
@@ -183,26 +215,36 @@ export class PostCardComponent {
   @Input() post!: Post;
   @Input() isNested: boolean = false;
   showReplies: boolean = false;
+  loadingReplies: boolean = false;
+
+  constructor(private postService: PostService) {}
+
+  loadAndShowReplies() {
+    if (this.post.replies && this.post.replies.length > 0) {
+      // Replies already loaded, just toggle visibility
+      this.showReplies = true;
+      return;
+    }
+
+    // Load replies from server
+    this.loadingReplies = true;
+    this.postService.getReplies(this.post.id).subscribe({
+      next: (response) => {
+        this.post.replies = response.data.map((reply: Post) => ({
+          ...reply,
+          replies: [], // Initialize nested replies as empty for lazy loading
+        }));
+        this.showReplies = true;
+        this.loadingReplies = false;
+      },
+      error: (error) => {
+        console.error("Error loading replies:", error);
+        this.loadingReplies = false;
+      },
+    });
+  }
 
   toggleReplies() {
     this.showReplies = !this.showReplies;
-  }
-
-  getTotalNestedCount(): number {
-    if (!this.post.replies || this.post.replies.length === 0) {
-      return 0;
-    }
-    return this.countAllReplies(this.post.replies);
-  }
-
-  private countAllReplies(replies: Post[]): number {
-    let count = 0;
-    for (const reply of replies) {
-      count++; // Count this reply
-      if (reply.replies && reply.replies.length > 0) {
-        count += this.countAllReplies(reply.replies); // Recursively count nested replies
-      }
-    }
-    return count;
   }
 }

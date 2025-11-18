@@ -49,6 +49,7 @@ import {
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { AuthInterceptor } from "./core/interceptors/auth.interceptor";
+import { DelayInterceptor } from "./core/interceptors/delay.interceptor";
 
 // Layout Components
 import { HeaderComponent } from "./layout/header/header.component";
@@ -151,6 +152,11 @@ import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: DelayInterceptor,
       multi: true,
     },
   ],

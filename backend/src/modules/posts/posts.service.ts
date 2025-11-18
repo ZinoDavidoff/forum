@@ -17,48 +17,56 @@ export class PostsService {
   ) {}
 
   async findByThread(threadId: string, page: number = 1, limit: number = 20) {
-    // Get all posts for this thread with their relations
-    const allPosts = await this.postsRepository.find({
+    // Get only root posts (posts with no parent) for this thread
+    const [rootPosts, total] = await this.postsRepository.findAndCount({
       where: {
         thread: { id: threadId },
+        parentPost: null,
         isDeleted: false,
       },
       order: { createdAt: "ASC" },
-      relations: ["author", "reactions", "parentPost"],
+      relations: ["author", "reactions"],
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
-    // Build tree structure manually
-    const postMap = new Map<string, any>();
-    const rootPosts: any[] = [];
-
-    // First pass: create map of all posts
-    allPosts.forEach((post) => {
-      postMap.set(post.id, { ...post, replies: [] });
-    });
-
-    // Second pass: build tree structure
-    allPosts.forEach((post) => {
-      const postWithReplies = postMap.get(post.id);
-      if (post.parentPost) {
-        const parent = postMap.get(post.parentPost.id);
-        if (parent) {
-          parent.replies.push(postWithReplies);
-        }
-      } else {
-        rootPosts.push(postWithReplies);
-      }
-    });
-
-    // Apply pagination to root posts only
-    const start = (page - 1) * limit;
-    const paginatedRootPosts = rootPosts.slice(start, start + limit);
+    // Add reply count to each post (count all descendants recursively)
+    const postsWithReplyCount = await Promise.all(
+      rootPosts.map(async (post) => {
+        const replyCount = await this.countAllReplies(post.id);
+        return {
+          ...post,
+          replyCount,
+        };
+      })
+    );
 
     return {
-      data: paginatedRootPosts,
-      total: rootPosts.length,
+      data: postsWithReplyCount,
+      total,
       page,
-      lastPage: Math.ceil(rootPosts.length / limit),
+      lastPage: Math.ceil(total / limit),
     };
+  }
+
+  private async countAllReplies(postId: string): Promise<number> {
+    // Get all direct children
+    const directChildren = await this.postsRepository.find({
+      where: {
+        parentPost: { id: postId },
+        isDeleted: false,
+      },
+      select: ["id"],
+    });
+
+    let count = directChildren.length;
+
+    // Recursively count children of children
+    for (const child of directChildren) {
+      count += await this.countAllReplies(child.id);
+    }
+
+    return count;
   }
 
   async findOne(id: string) {
@@ -72,6 +80,43 @@ export class PostsService {
     }
 
     return post;
+  }
+
+  async findReplies(postId: string) {
+    // Verify the post exists
+    const post = await this.postsRepository.findOne({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Post not found");
+    }
+
+    // Get all direct replies (children) for this post
+    const replies = await this.postsRepository.find({
+      where: {
+        parentPost: { id: postId },
+        isDeleted: false,
+      },
+      relations: ["author", "reactions"],
+      order: { createdAt: "ASC" },
+    });
+
+    // Add replyCount to each reply (count all descendants recursively)
+    const repliesWithCount = await Promise.all(
+      replies.map(async (reply) => {
+        const replyCount = await this.countAllReplies(reply.id);
+        return {
+          ...reply,
+          replyCount,
+        };
+      })
+    );
+
+    return {
+      data: repliesWithCount,
+      total: repliesWithCount.length,
+    };
   }
 
   async create(createPostDto: CreatePostDto, userId: string) {

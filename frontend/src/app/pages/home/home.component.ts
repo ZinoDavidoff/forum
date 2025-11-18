@@ -14,6 +14,10 @@ export class HomeComponent implements OnInit {
   categories: Category[] = [];
   currentUser: User | null = null;
   loading = true;
+  loadingMore = false;
+  currentPage = 1;
+  totalThreads = 0;
+  lastPage = 1;
 
   constructor(
     private threadService: ThreadService,
@@ -35,10 +39,38 @@ export class HomeComponent implements OnInit {
       },
     });
 
-    this.threadService.getThreads(1, 10).subscribe({
+    this.threadService.getThreads(1, 5).subscribe({
       next: (response) => {
         this.featuredThreads = response.data;
+        this.totalThreads = response.total;
+        this.lastPage = response.lastPage;
+        this.currentPage = response.page;
         this.loading = false;
+      },
+    });
+  }
+
+  get hasMoreThreads(): boolean {
+    return this.currentPage < this.lastPage;
+  }
+
+  loadMoreThreads() {
+    if (this.loadingMore || !this.hasMoreThreads) {
+      return;
+    }
+
+    this.loadingMore = true;
+    const nextPage = this.currentPage + 1;
+
+    this.threadService.getThreads(nextPage, 5).subscribe({
+      next: (response) => {
+        this.featuredThreads = [...this.featuredThreads, ...response.data];
+        this.currentPage = response.page;
+        this.loadingMore = false;
+      },
+      error: (error) => {
+        console.error("Error loading more threads:", error);
+        this.loadingMore = false;
       },
     });
   }
