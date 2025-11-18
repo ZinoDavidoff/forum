@@ -15,8 +15,10 @@ import { Thread } from "../../../core/models/models";
           <span class="author-name">{{ thread.author.username }}</span>
           <span class="dot">•</span>
           <span class="time-ago">2h ago</span>
-          <span *ngIf="thread.isPinned" class="badge badge-pink"><i-lucide name="pin" [size]="16"></i-lucide></span>
-          <span *ngIf="thread.isLocked" class="badge badge-blue"><i-lucide name="lock" [size]="16"></i-lucide></span>
+          <div class="badge-container">
+            <span *ngIf="thread.isPinned" class="badge badge-pink"><i-lucide name="pin" [size]="16"></i-lucide></span>
+            <span *ngIf="thread.isLocked" class="badge badge-blue"><i-lucide name="lock" [size]="16"></i-lucide></span>
+          </div>
         </div>
 
         <h3 class="thread-title">{{ thread.title }}</h3>
@@ -115,7 +117,7 @@ import { Thread } from "../../../core/models/models";
         background: var(--gray-100);
       }
 
-      .badge {
+      .badge-container {
         margin-left: auto;
       }
     `,

@@ -58,9 +58,6 @@
 }
 
 /* Main Feed */
-.main-feed {
-  max-width: 640px;
-}
 
 .create-post-card {
   display: flex;

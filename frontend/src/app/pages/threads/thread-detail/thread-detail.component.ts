@@ -105,10 +105,6 @@ import { Thread, Post } from "../../../core/models/models";
         height: fit-content;
       }
 
-      .main-feed {
-        max-width: 640px;
-      }
-
       .sidebar-widget {
         margin-bottom: var(--spacing-md);
         padding: var(--spacing-md);
