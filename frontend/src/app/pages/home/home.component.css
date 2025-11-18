@@ -112,6 +112,12 @@
   color: var(--text-dark);
 }
 
+.threads-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
 /* Right Sidebar */
 .right-sidebar {
   position: sticky;

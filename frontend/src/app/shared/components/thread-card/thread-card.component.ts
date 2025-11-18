@@ -52,7 +52,7 @@ import { Thread } from "../../../core/models/models";
         gap: var(--spacing-sm);
         padding: var(--spacing-md);
         cursor: pointer;
-        margin-bottom: var(--spacing-md);
+        margin-bottom: 0;
       }
 
       .thread-card:hover {
