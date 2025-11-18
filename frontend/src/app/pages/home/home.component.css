@@ -12,7 +12,7 @@
 /* Left Sidebar */
 .left-sidebar {
   position: sticky;
-  top: 89px;
+  top: 102px;
   height: fit-content;
 }
 
@@ -115,7 +115,7 @@
 /* Right Sidebar */
 .right-sidebar {
   position: sticky;
-  top: 89px;
+  top: 102px;
   height: fit-content;
 }
 

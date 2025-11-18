@@ -101,7 +101,7 @@ import { Thread, Post } from "../../../core/models/models";
       .left-sidebar,
       .right-sidebar {
         position: sticky;
-        top: 89px;
+        top: 102px;
         height: fit-content;
       }
 

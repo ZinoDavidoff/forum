@@ -21,7 +21,7 @@ import { Component } from "@angular/core";
 
       .main-content {
         flex: 1;
-        padding-top: 73px;
+        padding-top: 86px;
       }
     `,
   ],
