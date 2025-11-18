@@ -57,10 +57,18 @@ import { Thread, Post } from "../../../core/models/models";
 
               <div class="comments-section">
                 <div class="comment-sort card">
-                  <button class="sort-btn active">Best</button>
-                  <button class="sort-btn">Top</button>
-                  <button class="sort-btn">New</button>
-                  <button class="sort-btn">Old</button>
+                  <button class="sort-btn active">
+                    <i-lucide name="award" [size]="18"></i-lucide> Best
+                  </button>
+                  <button class="sort-btn">
+                    <i-lucide name="trending-up" [size]="18"></i-lucide> Top
+                  </button>
+                  <button class="sort-btn">
+                    <i-lucide name="star" [size]="18"></i-lucide> New
+                  </button>
+                  <button class="sort-btn">
+                    <i-lucide name="clock" [size]="18"></i-lucide> Old
+                  </button>
                 </div>
 
                 <app-post-card
@@ -204,14 +212,17 @@ import { Thread, Post } from "../../../core/models/models";
       }
 
       .sort-btn {
-        padding: 6px 12px;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-sm) var(--spacing-md);
         border: none;
         background: none;
         border-radius: var(--radius-sm);
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-light);
         cursor: pointer;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-light);
         transition: all 0.2s ease;
       }
 
@@ -221,7 +232,7 @@ import { Thread, Post } from "../../../core/models/models";
 
       .sort-btn.active {
         background: var(--gray-100);
-        color: var(--primary);
+        color: var(--text-dark);
       }
 
       .stat-item {

@@ -12,11 +12,16 @@
               [routerLink]="['/']"
               [queryParams]="{ categoryId: category.id }"
             >
-              <i-lucide
-                [name]="category.icon || 'message-square'"
-                [size]="20"
-              ></i-lucide>
-              <span>{{ category.name }}</span>
+              <div class="topic-content">
+                <i-lucide
+                  [name]="category.icon || 'message-square'"
+                  [size]="20"
+                ></i-lucide>
+                <span>{{ category.name }}</span>
+              </div>
+              <span class="thread-count-badge">{{
+                category.threadCount | compactNumber
+              }}</span>
             </a>
           </div>
         </div>

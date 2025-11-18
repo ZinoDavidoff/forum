@@ -44,6 +44,7 @@ import {
   Share,
   Bookmark,
   CornerDownRight,
+  Clock,
 } from "lucide-angular";
 
 import { AppRoutingModule } from "./app-routing.module";
@@ -76,6 +77,7 @@ import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loa
 
 // Pipes
 import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
+import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
 
 @NgModule({
   declarations: [
@@ -98,6 +100,7 @@ import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
     CategoryBadgeComponent,
     LoadingSpinnerComponent,
     TimeAgoPipe,
+    CompactNumberPipe,
   ],
   imports: [
     BrowserModule,
@@ -146,6 +149,7 @@ import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
       Share,
       Bookmark,
       CornerDownRight,
+      Clock,
     }),
   ],
   providers: [
