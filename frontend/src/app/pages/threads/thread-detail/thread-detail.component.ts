@@ -132,7 +132,7 @@ import { Thread, Post } from "../../../core/models/models";
     `
       .reddit-layout {
         display: grid;
-        grid-template-columns: 250px 1fr 312px;
+        grid-template-columns: 300px 1fr 250px;
         gap: var(--spacing-md);
         padding: var(--spacing-md) 0;
       }
@@ -318,7 +318,7 @@ import { Thread, Post } from "../../../core/models/models";
 
       @media (max-width: 1024px) {
         .reddit-layout {
-          grid-template-columns: 1fr 312px;
+          grid-template-columns: 1fr 250px;
         }
 
         .left-sidebar {
