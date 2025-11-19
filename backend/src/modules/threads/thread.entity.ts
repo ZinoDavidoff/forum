@@ -52,7 +52,10 @@ export class Thread {
   replyCount: number;
 
   @Column({ default: 0 })
-  likeCount: number;
+  upvoteCount: number;
+
+  @Column({ default: 0 })
+  downvoteCount: number;
 
   @Column("simple-array", { nullable: true })
   tags: string[];

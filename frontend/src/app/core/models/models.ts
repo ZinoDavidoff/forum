@@ -44,7 +44,8 @@ export interface Thread {
   isFeatured: boolean;
   viewCount: number;
   replyCount: number;
-  likeCount: number;
+  upvoteCount: number;
+  downvoteCount: number;
   tags?: string[];
   author: User;
   category: Category;
@@ -58,7 +59,8 @@ export interface Post {
   content: string;
   isEdited: boolean;
   editedAt?: Date;
-  likeCount: number;
+  upvoteCount: number;
+  downvoteCount: number;
   replyCount: number;
   isDeleted: boolean;
   attachments?: string[];

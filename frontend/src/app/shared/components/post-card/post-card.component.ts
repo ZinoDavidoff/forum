@@ -22,10 +22,13 @@ import { PostService } from "../../../core/services/post.service";
         </div>
         <div class="comment-content" [innerHTML]="post.content"></div>
         <div class="comment-actions">
-          <button class="action-btn">
+          <button class="action-btn upvote-btn">
             <i-lucide name="chevron-up" [size]="16"></i-lucide>
-            {{ post.likeCount || 0 }}
+            {{ post.upvoteCount || 0 }}
+          </button>
+          <button class="action-btn downvote-btn">
             <i-lucide name="chevron-down" [size]="16"></i-lucide>
+            {{ post.downvoteCount || 0 }}
           </button>
           <button class="action-btn">
             <i-lucide name="message-circle" [size]="16"></i-lucide>
@@ -56,7 +59,10 @@ import { PostService } from "../../../core/services/post.service";
 
           <!-- Show expanded replies -->
           <div *ngIf="showReplies && post.replies && post.replies.length > 0">
-            <button class="action-btn collapse-replies-btn" (click)="toggleReplies()">
+            <button
+              class="action-btn collapse-replies-btn"
+              (click)="toggleReplies()"
+            >
               <i-lucide name="corner-down-right" [size]="14"></i-lucide>
               Hide {{ post.replyCount }}
               {{ post.replyCount === 1 ? "reply" : "replies" }}
@@ -153,6 +159,10 @@ import { PostService } from "../../../core/services/post.service";
 
       .action-btn:hover {
         background: var(--gray-100);
+      }
+
+      .vote-btn {
+        gap: 6px;
       }
 
       /*

@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { ThreadService } from "../../core/services/thread.service";
 import { CategoryService } from "../../core/services/category.service";
 import { AuthService } from "../../core/services/auth.service";
+import { UserService } from "../../core/services/user.service";
 import { Thread, Category, User } from "../../core/models/models";
 
 @Component({
@@ -17,12 +18,14 @@ export class HomeComponent implements OnInit {
   loadingMore = false;
   currentPage = 1;
   totalThreads = 0;
+  totalMembers = 0;
   lastPage = 1;
 
   constructor(
     private threadService: ThreadService,
     private categoryService: CategoryService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
@@ -36,6 +39,12 @@ export class HomeComponent implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
+      },
+    });
+
+    this.userService.getStats().subscribe({
+      next: (stats) => {
+        this.totalMembers = stats.totalMembers;
       },
     });
 

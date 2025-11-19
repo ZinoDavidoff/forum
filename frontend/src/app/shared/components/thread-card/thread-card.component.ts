@@ -29,9 +29,17 @@ import { Thread } from "../../../core/models/models";
         <p class="thread-excerpt">{{ thread.content.substring(0, 200) }}...</p>
 
         <div class="thread-actions">
+          <button class="action-btn upvote-btn">
+            <i-lucide name="chevron-up" [size]="18"></i-lucide>
+            {{ thread.upvoteCount || 0 }}
+          </button>
+          <button class="action-btn downvote-btn">
+            <i-lucide name="chevron-down" [size]="18"></i-lucide>
+            {{ thread.downvoteCount || 0 }}
+          </button>
           <button class="action-btn">
             <i-lucide name="message-square" [size]="18"></i-lucide>
-            {{ thread.replyCount }} Comments
+            {{ thread.replyCount }}
           </button>
           <button class="action-btn">
             <i-lucide name="share" [size]="18"></i-lucide>
@@ -119,6 +127,10 @@ import { Thread } from "../../../core/models/models";
 
       .action-btn:hover {
         background: var(--gray-100);
+      }
+
+      .vote-btn {
+        gap: 6px;
       }
 
       .badge-container {

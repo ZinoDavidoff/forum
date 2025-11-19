@@ -43,15 +43,27 @@ import { Thread, Post } from "../../../core/models/models";
                 <h1 class="thread-title">{{ thread.title }}</h1>
                 <div class="thread-content" [innerHTML]="thread.content"></div>
 
-                <div class="thread-stats">
-                  <span
-                    ><i-lucide name="message-square" [size]="16"></i-lucide>
-                    {{ getTotalCommentCount() }} comments</span
-                  >
-                  <span
-                    ><i-lucide name="eye" [size]="16"></i-lucide>
-                    {{ thread.viewCount }} views</span
-                  >
+                <div class="thread-actions">
+                  <button class="action-btn upvote-btn">
+                    <i-lucide name="chevron-up" [size]="18"></i-lucide>
+                    {{ thread.upvoteCount || 0 }}
+                  </button>
+                  <button class="action-btn downvote-btn">
+                    <i-lucide name="chevron-down" [size]="18"></i-lucide>
+                    {{ thread.downvoteCount || 0 }}
+                  </button>
+                  <button class="action-btn">
+                    <i-lucide name="message-circle" [size]="18"></i-lucide>
+                    Reply
+                  </button>
+                  <button class="action-btn">
+                    <i-lucide name="share" [size]="18"></i-lucide>
+                    Share
+                  </button>
+                  <button class="action-btn">
+                    <i-lucide name="bookmark" [size]="18"></i-lucide>
+                    Save
+                  </button>
                 </div>
               </div>
 
@@ -84,7 +96,7 @@ import { Thread, Post } from "../../../core/models/models";
                     [disabled]="loadingMore"
                   >
                     <i-lucide
-                      name="loader-2"
+                      name="loader"
                       [size]="16"
                       *ngIf="loadingMore"
                       class="spinner"
@@ -186,6 +198,11 @@ import { Thread, Post } from "../../../core/models/models";
         color: var(--text-dark);
       }
 
+      .thread-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+      }
+
       .thread-stats {
         display: flex;
         gap: var(--spacing-lg);
@@ -265,8 +282,16 @@ import { Thread, Post } from "../../../core/models/models";
         transition: all 0.2s ease;
       }
 
+      .thread-actions .action-btn {
+        color: var(--text-light);
+      }
+
       .action-btn:hover {
         background: var(--gray-100);
+      }
+
+      .vote-btn {
+        gap: 6px;
       }
 
       .load-more-btn:hover:not(:disabled) {

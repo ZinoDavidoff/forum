@@ -11,7 +11,8 @@ import { User } from "../users/user.entity";
 import { Post } from "../posts/post.entity";
 
 export enum ReactionType {
-  LIKE = "like",
+  UPVOTE = "upvote",
+  DOWNVOTE = "downvote",
   LOVE = "love",
   HELPFUL = "helpful",
   FUNNY = "funny",

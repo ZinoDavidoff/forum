@@ -10,32 +10,65 @@ import { Reaction, ReactionType } from "./modules/reactions/reaction.entity";
 import { Badge } from "./modules/reputation/badge.entity";
 
 async function seed() {
+  let app2: any = null;
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
 
   try {
     console.log("🌱 Starting database seeding...\n");
 
-    // Clear existing data
-    console.log("🗑️  Clearing existing data...");
-    await dataSource.query("TRUNCATE TABLE reactions CASCADE");
-    await dataSource.query("TRUNCATE TABLE posts CASCADE");
-    await dataSource.query("TRUNCATE TABLE threads CASCADE");
-    await dataSource.query("TRUNCATE TABLE categories CASCADE");
-    await dataSource.query("TRUNCATE TABLE user_badges CASCADE");
-    await dataSource.query("TRUNCATE TABLE user_bookmarks CASCADE");
-    await dataSource.query("TRUNCATE TABLE user_followers CASCADE");
-    await dataSource.query("TRUNCATE TABLE user_following CASCADE");
-    await dataSource.query("TRUNCATE TABLE badges CASCADE");
-    await dataSource.query("TRUNCATE TABLE users CASCADE");
-    console.log("✅ Data cleared\n");
+    // Drop ALL tables to start completely fresh
+    console.log("🗑️  Dropping all tables...");
+    try {
+      // Drop tables in correct order (respecting foreign keys)
+      await dataSource.query("DROP TABLE IF EXISTS notifications CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS messages CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS reactions CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS posts_closure CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS posts CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS threads CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS categories_closure CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS categories CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS user_badges CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS user_bookmarks CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS user_followers CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS user_following CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS badges CASCADE");
+      await dataSource.query("DROP TABLE IF EXISTS users CASCADE");
 
-    const userRepository = dataSource.getRepository(User);
-    const categoryRepository = dataSource.getRepository(Category);
-    const threadRepository = dataSource.getRepository(Thread);
-    const postRepository = dataSource.getRepository(Post);
-    const reactionRepository = dataSource.getRepository(Reaction);
-    const badgeRepository = dataSource.getRepository(Badge);
+      // Drop all enum types
+      await dataSource.query("DROP TYPE IF EXISTS reactions_type_enum CASCADE");
+      await dataSource.query(
+        "DROP TYPE IF EXISTS reactions_type_enum_old CASCADE"
+      );
+      await dataSource.query("DROP TYPE IF EXISTS threads_status_enum CASCADE");
+      await dataSource.query(
+        "DROP TYPE IF EXISTS notifications_type_enum CASCADE"
+      );
+      await dataSource.query("DROP TYPE IF EXISTS users_role_enum CASCADE");
+      await dataSource.query("DROP TYPE IF EXISTS users_status_enum CASCADE");
+
+      console.log("✅ All tables and enums dropped\n");
+    } catch (error) {
+      console.log("   (Some drops failed - this is okay on first run)");
+    }
+
+    // Close the connection to allow TypeORM to reconnect and create fresh schema
+    await dataSource.destroy();
+    await app.close();
+
+    // Reconnect - this will trigger TypeORM to create all tables with correct schema
+    console.log("🔄 Reconnecting to recreate schema...");
+    app2 = await NestFactory.createApplicationContext(AppModule);
+    const dataSource2 = app2.get(DataSource);
+    console.log("✅ Schema recreated\n");
+
+    const userRepository = dataSource2.getRepository(User);
+    const categoryRepository = dataSource2.getRepository(Category);
+    const threadRepository = dataSource2.getRepository(Thread);
+    const postRepository = dataSource2.getRepository(Post);
+    const reactionRepository = dataSource2.getRepository(Reaction);
+    const badgeRepository = dataSource2.getRepository(Badge);
 
     // Create Badges
     console.log("Creating badges...");
@@ -367,6 +400,8 @@ async function seed() {
         tags: ["first-trimester", "morning-sickness", "symptoms"],
         isPinned: false,
         viewCount: 156,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -395,6 +430,8 @@ async function seed() {
         tags: ["third-trimester", "sleep", "insomnia"],
         isPinned: false,
         viewCount: 98,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[7],
@@ -420,6 +457,8 @@ async function seed() {
         isPinned: false,
         isFeatured: true,
         viewCount: 234,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[2],
@@ -449,6 +488,8 @@ async function seed() {
         tags: ["newborn", "umbilical-cord", "newborn-care"],
         isPinned: false,
         viewCount: 87,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -472,6 +513,8 @@ async function seed() {
         tags: ["newborn", "breastfeeding", "cluster-feeding"],
         isPinned: true,
         viewCount: 312,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -501,6 +544,8 @@ async function seed() {
         tags: ["twins", "sleep-schedule", "sleep-training"],
         isPinned: false,
         viewCount: 145,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[7],
@@ -524,6 +569,8 @@ async function seed() {
         tags: ["sleep-regression", "4-months", "sleep-problems"],
         isPinned: false,
         viewCount: 267,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[7],
@@ -553,6 +600,8 @@ async function seed() {
         tags: ["breastfeeding", "formula", "feeding"],
         isPinned: false,
         viewCount: 198,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -587,6 +636,8 @@ async function seed() {
         isPinned: true,
         isFeatured: true,
         viewCount: 445,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[2],
@@ -656,6 +707,8 @@ async function seed() {
         tags: ["milestones", "walking", "baby-proofing", "safety"],
         isPinned: false,
         viewCount: 176,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[4],
@@ -685,6 +738,8 @@ async function seed() {
         tags: ["newborn", "jaundice", "health"],
         isPinned: false,
         viewCount: 112,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -708,6 +763,8 @@ async function seed() {
         tags: ["fever", "illness", "emergency"],
         isPinned: false,
         viewCount: 203,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -737,6 +794,8 @@ async function seed() {
         tags: ["working-mom", "childcare", "nursery"],
         isPinned: false,
         viewCount: 289,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[4],
@@ -771,6 +830,8 @@ async function seed() {
         tags: ["baby-monitor", "products", "nursery"],
         isPinned: false,
         viewCount: 234,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[3],
@@ -799,6 +860,8 @@ async function seed() {
         tags: ["pram", "products", "reviews"],
         isPinned: false,
         viewCount: 167,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[4],
@@ -828,6 +891,8 @@ async function seed() {
         tags: ["support", "mental-health", "loneliness", "new-mom"],
         isPinned: false,
         viewCount: 312,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: [
           {
             author: users[1],
@@ -868,6 +933,8 @@ async function seed() {
         isPinned: true,
         isFeatured: true,
         viewCount: 1247,
+        upvoteCount: 0,
+        downvoteCount: 0,
         posts: Array.from({ length: 30 }, (_, i) => ({
           author: users[(i % 8) + 2], // Rotate through users 2-9
           content: [
@@ -1044,7 +1111,8 @@ async function seed() {
         status: ThreadStatus.OPEN,
         viewCount: threadData.viewCount,
         replyCount: threadData.posts.length,
-        likeCount: 0,
+        upvoteCount: threadData.upvoteCount || 0,
+        downvoteCount: threadData.downvoteCount || 0,
       });
 
       totalThreads++;
@@ -1060,7 +1128,8 @@ async function seed() {
             author: postData.author,
             thread: thread,
             parentPost: parentPost,
-            likeCount: 0,
+            upvoteCount: 0,
+            downvoteCount: 0,
             replyCount: postData.replies ? postData.replies.length : 0,
           });
 
@@ -1111,7 +1180,8 @@ async function seed() {
       // Don't let users react to their own posts
       if (randomPost.author.id !== randomUser.id) {
         const reactionTypes = [
-          ReactionType.LIKE,
+          ReactionType.UPVOTE,
+          ReactionType.DOWNVOTE,
           ReactionType.LOVE,
           ReactionType.HELPFUL,
           ReactionType.FUNNY,
@@ -1127,8 +1197,12 @@ async function seed() {
           });
           reactions.push(reaction);
 
-          // Update post like count
-          randomPost.likeCount++;
+          // Update post vote count
+          if (randomType === ReactionType.UPVOTE) {
+            randomPost.upvoteCount++;
+          } else if (randomType === ReactionType.DOWNVOTE) {
+            randomPost.downvoteCount++;
+          }
           await postRepository.save(randomPost);
         } catch (error) {
           // Skip if duplicate (user already reacted to this post)
@@ -1170,7 +1244,10 @@ async function seed() {
     console.error("❌ Error seeding database:", error);
     throw error;
   } finally {
-    await app.close();
+    // Close app2 if it was created
+    if (app2 && app2.close) {
+      await app2.close();
+    }
   }
 }
 

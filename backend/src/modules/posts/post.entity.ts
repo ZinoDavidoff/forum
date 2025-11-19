@@ -31,7 +31,10 @@ export class Post {
   editedAt: Date;
 
   @Column({ default: 0 })
-  likeCount: number;
+  upvoteCount: number;
+
+  @Column({ default: 0 })
+  downvoteCount: number;
 
   @Column({ default: 0 })
   replyCount: number;

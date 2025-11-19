@@ -7,7 +7,7 @@
           <h3>Popular Topics</h3>
           <div class="topic-list">
             <a
-              *ngFor="let category of categories.slice(0, 5)"
+              *ngFor="let category of categories"
               class="topic-item"
               [routerLink]="['/']"
               [queryParams]="{ categoryId: category.id }"
@@ -103,12 +103,12 @@
           </p>
           <div class="community-stats">
             <div class="stat">
-              <div class="stat-value">12.5K</div>
+              <div class="stat-value">{{ totalMembers | compactNumber }}</div>
               <div class="stat-label">Members</div>
             </div>
             <div class="stat">
-              <div class="stat-value">2.3K</div>
-              <div class="stat-label">Online</div>
+              <div class="stat-value">{{ totalThreads | compactNumber }}</div>
+              <div class="stat-label">Threads</div>
             </div>
           </div>
           <button
