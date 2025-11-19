@@ -45,13 +45,13 @@ export class HomeComponent implements OnInit {
     this.userService.getStats().subscribe({
       next: (stats) => {
         this.totalMembers = stats.totalMembers;
+        this.totalThreads = stats.totalThreads;
       },
     });
 
     this.threadService.getThreads(1, 5).subscribe({
       next: (response) => {
         this.featuredThreads = response.data;
-        this.totalThreads = response.total;
         this.lastPage = response.lastPage;
         this.currentPage = response.page;
         this.loading = false;

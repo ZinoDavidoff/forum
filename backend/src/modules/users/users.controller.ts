@@ -18,8 +18,7 @@ export class UsersController {
 
   @Get("stats")
   async getStats() {
-    const count = await this.usersService.count();
-    return { totalMembers: count };
+    return this.usersService.getCommunityStats();
   }
 
   @Get()

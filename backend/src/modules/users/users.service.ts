@@ -3,12 +3,15 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { Thread } from "../threads/thread.entity";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>
+    private usersRepository: Repository<User>,
+    @InjectRepository(Thread)
+    private threadsRepository: Repository<Thread>
   ) {}
 
   async findAll(page: number = 1, limit: number = 20) {
@@ -44,6 +47,14 @@ export class UsersService {
 
   async count(): Promise<number> {
     return this.usersRepository.count();
+  }
+
+  async getCommunityStats() {
+    const [totalMembers, totalThreads] = await Promise.all([
+      this.usersRepository.count(),
+      this.threadsRepository.count(),
+    ]);
+    return { totalMembers, totalThreads };
   }
 
   async findByUsername(username: string) {

@@ -16,8 +16,10 @@ export class UserService {
     return this.http.get<any>(`${this.apiUrl}?page=${page}&limit=${limit}`);
   }
 
-  getStats(): Observable<{ totalMembers: number }> {
-    return this.http.get<{ totalMembers: number }>(`${this.apiUrl}/stats`);
+  getStats(): Observable<{ totalMembers: number; totalThreads: number }> {
+    return this.http.get<{ totalMembers: number; totalThreads: number }>(
+      `${this.apiUrl}/stats`
+    );
   }
 
   getUserById(id: string): Observable<User> {

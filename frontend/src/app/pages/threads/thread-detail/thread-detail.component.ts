@@ -338,6 +338,10 @@ import { Thread, Post } from "../../../core/models/models";
         .main-feed {
           max-width: 100%;
         }
+
+        .thread-actions {
+          gap: 0;
+        }
       }
     `,
   ],
