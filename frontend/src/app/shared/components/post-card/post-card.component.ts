@@ -34,10 +34,6 @@ import { PostService } from "../../../core/services/post.service";
             <i-lucide name="message-circle" [size]="16"></i-lucide>
             Reply
           </button>
-          <button class="action-btn">
-            <i-lucide name="share" [size]="16"></i-lucide>
-            Share
-          </button>
         </div>
 
         <!-- Nested Replies -->

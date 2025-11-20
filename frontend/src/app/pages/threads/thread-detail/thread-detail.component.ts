@@ -78,9 +78,6 @@ import { Thread, Post } from "../../../core/models/models";
                   <button class="sort-btn">
                     <i-lucide name="star" [size]="18"></i-lucide> New
                   </button>
-                  <button class="sort-btn">
-                    <i-lucide name="clock" [size]="18"></i-lucide> Old
-                  </button>
                 </div>
 
                 <app-post-card
@@ -187,7 +184,7 @@ import { Thread, Post } from "../../../core/models/models";
       }
 
       .thread-title {
-        font-size: 1.5rem;
+        font-size: 1.125rem;
         font-weight: 600;
         margin-bottom: var(--spacing-md);
         color: var(--text-dark);
@@ -196,6 +193,7 @@ import { Thread, Post } from "../../../core/models/models";
       .thread-content {
         margin-bottom: var(--spacing-md);
         color: var(--text-dark);
+        font-size: 0.875rem;
       }
 
       .thread-actions {
@@ -284,6 +282,7 @@ import { Thread, Post } from "../../../core/models/models";
 
       .thread-actions .action-btn {
         color: var(--text-light);
+        font-size: 0.75rem;
       }
 
       .action-btn:hover {
