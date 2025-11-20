@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { ThreadService } from "../../core/services/thread.service";
 import { CategoryService } from "../../core/services/category.service";
 import { AuthService } from "../../core/services/auth.service";
@@ -21,11 +22,24 @@ export class HomeComponent implements OnInit {
   totalMembers = 0;
   lastPage = 1;
 
+  // Post creation state
+  isCreatingPost = false;
+  showCategoryDropdown = false;
+  newPost = {
+    title: "",
+    content: "",
+    categoryId: "",
+    tags: "",
+    isLocked: false,
+  };
+  submitting = false;
+
   constructor(
     private threadService: ThreadService,
     private categoryService: CategoryService,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -80,6 +94,83 @@ export class HomeComponent implements OnInit {
       error: (error) => {
         console.error("Error loading more threads:", error);
         this.loadingMore = false;
+      },
+    });
+  }
+
+  expandPostCreator() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+    this.isCreatingPost = true;
+  }
+
+  collapsePostCreator() {
+    this.isCreatingPost = false;
+    this.showCategoryDropdown = false;
+    this.resetPostForm();
+  }
+
+  toggleCategoryDropdown() {
+    this.showCategoryDropdown = !this.showCategoryDropdown;
+  }
+
+  selectCategory(categoryId: string) {
+    this.newPost.categoryId = categoryId;
+    this.showCategoryDropdown = false;
+  }
+
+  getCategoryName(categoryId: string): string {
+    const category = this.categories.find((c) => c.id === categoryId);
+    return category ? category.name : "";
+  }
+
+  resetPostForm() {
+    this.newPost = {
+      title: "",
+      content: "",
+      categoryId: "",
+      tags: "",
+      isLocked: false,
+    };
+  }
+
+  createPost() {
+    if (
+      !this.newPost.title ||
+      !this.newPost.content ||
+      !this.newPost.categoryId
+    ) {
+      return;
+    }
+
+    this.submitting = true;
+    const postData: any = {
+      title: this.newPost.title,
+      content: this.newPost.content,
+      categoryId: this.newPost.categoryId,
+      tags: this.newPost.tags
+        ? this.newPost.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t)
+        : [],
+    };
+
+    if (this.newPost.isLocked) {
+      postData.isLocked = true;
+    }
+
+    this.threadService.createThread(postData).subscribe({
+      next: (thread) => {
+        this.submitting = false;
+        this.collapsePostCreator();
+        this.router.navigate(["/threads", thread.id]);
+      },
+      error: (error) => {
+        console.error("Error creating thread:", error);
+        this.submitting = false;
       },
     });
   }

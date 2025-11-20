@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
+  IsBoolean,
+} from "class-validator";
 
 export class CreateThreadDto {
   @IsString()
@@ -6,7 +12,7 @@ export class CreateThreadDto {
   title: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   slug: string;
 
   @IsString()
@@ -20,4 +26,8 @@ export class CreateThreadDto {
   @IsArray()
   @IsOptional()
   tags?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  isLocked?: boolean;
 }

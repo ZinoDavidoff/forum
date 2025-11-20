@@ -36,23 +36,158 @@
 
       <!-- Main Content -->
       <main class="main-feed">
-        <div class="create-post-card card">
-          <img
-            [src]="currentUser?.avatar || 'assets/default-avatar.png'"
-            alt="avatar"
-            class="avatar"
-            *ngIf="currentUser"
-          />
-          <input
-            type="text"
-            placeholder="Create Post"
-            class="create-input"
-            routerLink="/threads/create"
-            readonly
-          />
-          <button class="icon-btn" routerLink="/threads/create">
-            <i-lucide name="image-plus" [size]="20"></i-lucide>
-          </button>
+        <!-- Expandable Create Post Card -->
+        <div class="create-post-card card" [class.expanded]="isCreatingPost">
+          <!-- Collapsed State -->
+          <div
+            class="create-post-collapsed"
+            *ngIf="!isCreatingPost"
+            (click)="expandPostCreator()"
+          >
+            <img
+              [src]="currentUser?.avatar || 'assets/default-avatar.png'"
+              alt="avatar"
+              class="avatar"
+              *ngIf="currentUser"
+            />
+            <div class="create-input-wrapper">
+              <i-lucide name="edit" [size]="18" class="input-icon"></i-lucide>
+              <input
+                type="text"
+                placeholder="Create Post..."
+                class="create-input"
+                readonly
+              />
+            </div>
+            <button class="icon-btn">
+              <i-lucide name="image-plus" [size]="20"></i-lucide>
+            </button>
+          </div>
+
+          <!-- Expanded State -->
+          <div class="create-post-expanded" *ngIf="isCreatingPost">
+            <div class="editor-container">
+              <!-- Category Selection - Custom -->
+              <div class="editor-row">
+                <div class="custom-select" (click)="toggleCategoryDropdown()">
+                  <span class="selected-category" *ngIf="newPost.categoryId">
+                    {{ getCategoryName(newPost.categoryId) }}
+                  </span>
+                  <span
+                    class="selected-category placeholder"
+                    *ngIf="!newPost.categoryId"
+                  >
+                    Select a category...
+                  </span>
+                  <i-lucide
+                    name="chevron-down"
+                    [size]="16"
+                    class="dropdown-icon"
+                  ></i-lucide>
+
+                  <div class="category-dropdown" *ngIf="showCategoryDropdown">
+                    <div
+                      *ngFor="let category of categories"
+                      class="category-option"
+                      (click)="
+                        selectCategory(category.id); $event.stopPropagation()
+                      "
+                    >
+                      {{ category.name }}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  class="editor-close-btn"
+                  (click)="collapsePostCreator()"
+                >
+                  <i-lucide name="x" [size]="18"></i-lucide>
+                </button>
+              </div>
+
+              <div class="editor-divider"></div>
+
+              <!-- Title -->
+              <div class="editor-row">
+                <input
+                  type="text"
+                  [(ngModel)]="newPost.title"
+                  placeholder="Title"
+                  class="editor-title"
+                  maxlength="200"
+                  required
+                />
+              </div>
+
+              <div class="editor-divider"></div>
+
+              <!-- Content -->
+              <div class="editor-row">
+                <textarea
+                  [(ngModel)]="newPost.content"
+                  placeholder="Write your post content here..."
+                  class="editor-content"
+                  rows="8"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="editor-divider"></div>
+
+              <!-- Tags -->
+              <div class="editor-row">
+                <input
+                  type="text"
+                  [(ngModel)]="newPost.tags"
+                  placeholder="Add tags (comma separated)"
+                  class="editor-tags"
+                />
+              </div>
+
+              <div class="editor-divider"></div>
+
+              <!-- Footer with Lock and Actions -->
+              <div class="editor-footer">
+                <button
+                  class="lock-toggle"
+                  (click)="newPost.isLocked = !newPost.isLocked"
+                  [class.locked]="newPost.isLocked"
+                >
+                  <i-lucide name="lock" [size]="14"></i-lucide>
+                  <span>{{ newPost.isLocked ? "Locked" : "Lock post" }}</span>
+                </button>
+
+                <div class="editor-actions">
+                  <button
+                    class="btn btn-outline btn-sm"
+                    (click)="collapsePostCreator()"
+                    [disabled]="submitting"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    (click)="createPost()"
+                    [disabled]="
+                      !newPost.title ||
+                      !newPost.content ||
+                      !newPost.categoryId ||
+                      submitting
+                    "
+                  >
+                    <i-lucide
+                      name="loader-2"
+                      [size]="14"
+                      *ngIf="submitting"
+                      class="spinner"
+                    ></i-lucide>
+                    <span *ngIf="!submitting">Post</span>
+                    <span *ngIf="submitting">Posting...</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="filter-tabs card">

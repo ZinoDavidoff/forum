@@ -45,6 +45,8 @@ import {
   Bookmark,
   CornerDownRight,
   Clock,
+  X,
+  Loader2,
 } from "lucide-angular";
 
 import { AppRoutingModule } from "./app-routing.module";
@@ -150,6 +152,8 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
       Bookmark,
       CornerDownRight,
       Clock,
+      X,
+      Loader2,
     }),
   ],
   providers: [

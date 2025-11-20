@@ -79,8 +79,13 @@ export class ThreadsService {
   }
 
   async create(createThreadDto: CreateThreadDto, userId: string) {
+    // Auto-generate slug if not provided
+    const slug =
+      createThreadDto.slug || this.generateSlug(createThreadDto.title);
+
     const thread = this.threadsRepository.create({
       ...createThreadDto,
+      slug,
       author: { id: userId } as any,
       category: { id: createThreadDto.categoryId } as any,
     });
@@ -93,6 +98,18 @@ export class ThreadsService {
     );
 
     return savedThread;
+  }
+
+  private generateSlug(title: string): string {
+    return (
+      title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .substring(0, 100) +
+      "-" +
+      Date.now()
+    );
   }
 
   async update(id: string, updateThreadDto: UpdateThreadDto, userId: string) {
