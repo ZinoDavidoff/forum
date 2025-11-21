@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { PostService } from "../../../core/services/post.service";
-import { Thread, Post } from "../../../core/models/models";
+import { Thread, Post, Category } from "../../../core/models/models";
 import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
 
 @Component({
@@ -13,8 +13,41 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
           <!-- Left Sidebar -->
           <aside class="left-sidebar">
             <div class="sidebar-widget card">
-              <h3>About Thread</h3>
-              <p class="small-text">Thread discussion and details</p>
+              <h3>Popular Topics</h3>
+              <div class="topic-list">
+                <a
+                  class="topic-item"
+                  [routerLink]="['/']"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                >
+                  <div class="topic-content">
+                    <i-lucide name="home" [size]="20"></i-lucide>
+                    <span>All Topics</span>
+                  </div>
+                  <span class="thread-count-badge">{{
+                    totalThreads | compactNumber
+                  }}</span>
+                </a>
+                <a
+                  *ngFor="let category of categories"
+                  class="topic-item"
+                  [routerLink]="['/']"
+                  [queryParams]="{ categoryId: category.id }"
+                  routerLinkActive="active"
+                >
+                  <div class="topic-content">
+                    <i-lucide
+                      [name]="category.icon || 'message-square'"
+                      [size]="20"
+                    ></i-lucide>
+                    <span>{{ category.name }}</span>
+                  </div>
+                  <span class="thread-count-badge">{{
+                    category.threadCount | compactNumber
+                  }}</span>
+                </a>
+              </div>
             </div>
           </aside>
 
@@ -156,6 +189,65 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
         font-size: 0.875rem;
         color: var(--text-light);
         line-height: 1.4;
+      }
+
+      .topic-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+
+      .topic-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-md);
+        color: var(--text-dark);
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .topic-item .topic-content {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        flex: 1;
+      }
+
+      .topic-item:hover {
+        background: var(--gray-100);
+      }
+
+      .topic-item.active {
+        background: var(--primary-50);
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .thread-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        padding: 2px 6px;
+        background: var(--gray-200);
+        color: var(--text-primary);
+        border-radius: var(--radius-lg);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+      }
+
+      .topic-item:hover .thread-count-badge {
+        background: var(--gray-300);
+      }
+
+      .topic-item.active .thread-count-badge {
+        background: var(--primary-100);
+        color: var(--primary);
       }
 
       .thread-post {
@@ -346,6 +438,8 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
 export class ThreadDetailComponent implements OnInit {
   thread: Thread | null = null;
   posts: Post[] = [];
+  categories: Category[] = [];
+  totalThreads = 0;
   loadingMore = false;
   currentPage = 1;
   totalPosts = 0;
@@ -369,6 +463,12 @@ export class ThreadDetailComponent implements OnInit {
       this.totalPosts = data.posts.total;
       this.lastPage = data.posts.lastPage;
       this.currentPage = data.posts.page;
+      this.categories = data.categories;
+      // Calculate total threads from all categories
+      this.totalThreads = this.categories.reduce(
+        (sum, cat) => sum + (cat.threadCount || 0),
+        0
+      );
     }
   }
 

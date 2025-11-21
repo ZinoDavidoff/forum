@@ -30,8 +30,9 @@ export class HomeResolver implements Resolve<HomeData> {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<HomeData> {
+    const categoryId = route.queryParams["categoryId"];
     return forkJoin({
-      threads: this.threadService.getThreads(1, 5),
+      threads: this.threadService.getThreads(1, 5, categoryId || undefined),
       categories: this.categoryService.getCategories(),
       stats: this.userService.getStats(),
     });

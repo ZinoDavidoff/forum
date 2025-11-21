@@ -7,11 +7,13 @@ import {
 import { Observable, forkJoin } from "rxjs";
 import { ThreadService } from "../services/thread.service";
 import { PostService } from "../services/post.service";
-import { Thread, Post } from "../models/models";
+import { CategoryService } from "../services/category.service";
+import { Thread, Post, Category } from "../models/models";
 
 export interface ThreadDetailData {
   thread: Thread;
   posts: { data: Post[]; page: number; lastPage: number; total: number };
+  categories: Category[];
 }
 
 @Injectable({
@@ -20,7 +22,8 @@ export interface ThreadDetailData {
 export class ThreadDetailResolver implements Resolve<ThreadDetailData> {
   constructor(
     private threadService: ThreadService,
-    private postService: PostService
+    private postService: PostService,
+    private categoryService: CategoryService
   ) {}
 
   resolve(
@@ -31,6 +34,7 @@ export class ThreadDetailResolver implements Resolve<ThreadDetailData> {
     return forkJoin({
       thread: this.threadService.getThread(id),
       posts: this.postService.getPostsByThread(id, 1),
+      categories: this.categoryService.getCategories(),
     });
   }
 }
