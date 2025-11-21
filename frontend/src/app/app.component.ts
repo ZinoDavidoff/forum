@@ -10,17 +10,21 @@ import {
 @Component({
   selector: "app-root",
   template: `
-    <div class="app-container">
+    <div class="app-container" [class.auth-page]="isAuthPage">
       <app-loading-spinner
         [fullPage]="true"
         [transparent]="!isInitialLoad"
         *ngIf="loading"
       ></app-loading-spinner>
-      <app-header *ngIf="!isInitialLoad"></app-header>
-      <main class="main-content" *ngIf="!isInitialLoad">
+      <app-header *ngIf="!isInitialLoad && !isAuthPage"></app-header>
+      <main
+        class="main-content"
+        *ngIf="!isInitialLoad"
+        [class.auth-content]="isAuthPage"
+      >
         <router-outlet></router-outlet>
       </main>
-      <app-footer *ngIf="!isInitialLoad"></app-footer>
+      <app-footer *ngIf="!isInitialLoad && !isAuthPage"></app-footer>
     </div>
   `,
   styles: [
@@ -35,6 +39,17 @@ import {
         flex: 1;
         padding-top: 86px;
       }
+
+      .app-container.auth-page {
+        min-height: 100vh;
+      }
+
+      .main-content.auth-content {
+        padding-top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     `,
   ],
 })
@@ -42,6 +57,7 @@ export class AppComponent {
   title = "Mommy Forum";
   loading = true;
   isInitialLoad = true;
+  isAuthPage = false;
 
   constructor(private router: Router) {
     this.router.events.subscribe((event) => {
@@ -54,6 +70,11 @@ export class AppComponent {
       ) {
         this.loading = false;
         this.isInitialLoad = false;
+
+        // Check if current route is login or register
+        if (event instanceof NavigationEnd) {
+          this.isAuthPage = event.url === "/login" || event.url === "/register";
+        }
       }
     });
   }
