@@ -103,7 +103,6 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
                 </div>
               </div>
             </div>
-            <app-loading-spinner *ngIf="loading"></app-loading-spinner>
           </main>
 
           <!-- Right Sidebar -->
@@ -347,7 +346,6 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
 export class ThreadDetailComponent implements OnInit {
   thread: Thread | null = null;
   posts: Post[] = [];
-  loading = true;
   loadingMore = false;
   currentPage = 1;
   totalPosts = 0;
@@ -359,7 +357,6 @@ export class ThreadDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loading = true;
     const data = this.route.snapshot.data[
       "threadDetailData"
     ] as ThreadDetailData;
@@ -373,7 +370,6 @@ export class ThreadDetailComponent implements OnInit {
       this.lastPage = data.posts.lastPage;
       this.currentPage = data.posts.page;
     }
-    this.loading = false;
   }
 
   getTotalCommentCount(): number {

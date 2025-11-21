@@ -13,13 +13,14 @@ import {
     <div class="app-container">
       <app-loading-spinner
         [fullPage]="true"
+        [transparent]="!isInitialLoad"
         *ngIf="loading"
       ></app-loading-spinner>
-      <app-header *ngIf="!loading"></app-header>
-      <main class="main-content" *ngIf="!loading">
+      <app-header *ngIf="!isInitialLoad"></app-header>
+      <main class="main-content" *ngIf="!isInitialLoad">
         <router-outlet></router-outlet>
       </main>
-      <app-footer *ngIf="!loading"></app-footer>
+      <app-footer *ngIf="!isInitialLoad"></app-footer>
     </div>
   `,
   styles: [
@@ -40,6 +41,7 @@ import {
 export class AppComponent {
   title = "Mommy Forum";
   loading = true;
+  isInitialLoad = true;
 
   constructor(private router: Router) {
     this.router.events.subscribe((event) => {
@@ -51,6 +53,7 @@ export class AppComponent {
         event instanceof NavigationError
       ) {
         this.loading = false;
+        this.isInitialLoad = false;
       }
     });
   }

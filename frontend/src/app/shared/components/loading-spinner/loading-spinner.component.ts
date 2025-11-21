@@ -3,7 +3,11 @@ import { Component, Input } from "@angular/core";
 @Component({
   selector: "app-loading-spinner",
   template: `
-    <div class="spinner-overlay" *ngIf="fullPage">
+    <div
+      class="spinner-overlay"
+      *ngIf="fullPage"
+      [class.transparent]="transparent"
+    >
       <div class="spinner-content">
         <div class="ripple-container">
           <div class="ripple-circle ripple-1"></div>
@@ -16,8 +20,14 @@ import { Component, Input } from "@angular/core";
       </div>
     </div>
     <div class="spinner-container" *ngIf="!fullPage">
-      <div class="spinner"><i-lucide name="baby" [size]="48"></i-lucide></div>
-      <p>Loading...</p>
+      <div class="ripple-container">
+        <div class="ripple-circle ripple-1"></div>
+        <div class="ripple-circle ripple-2"></div>
+        <div class="ripple-circle ripple-3"></div>
+        <div class="baby-icon">
+          <i-lucide name="baby" [size]="56"></i-lucide>
+        </div>
+      </div>
     </div>
   `,
   styles: [
@@ -33,6 +43,21 @@ import { Component, Input } from "@angular/core";
         align-items: center;
         justify-content: center;
         z-index: 9999;
+        animation: fadeIn 0.2s ease-in-out;
+      }
+
+      .spinner-overlay.transparent {
+        background: rgba(var(--bg-primary), 0.5);
+        backdrop-filter: blur(4px);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       .spinner-content {
@@ -76,7 +101,7 @@ import { Component, Input } from "@angular/core";
         line-height: 0;
         border-radius: 50%;
         background: var(--primary);
-        padding: .5rem;
+        padding: 0.5rem;
       }
 
       ::ng-deep .baby-icon svg {
@@ -96,18 +121,16 @@ import { Component, Input } from "@angular/core";
       }
 
       .spinner-container {
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         padding: var(--spacing-xxl);
-      }
-
-      .spinner {
-        font-size: 3rem;
-        color: var(--primary-500);
-        animation: float 2s ease-in-out infinite;
+        min-height: 200px;
       }
     `,
   ],
 })
 export class LoadingSpinnerComponent {
   @Input() fullPage = false;
+  @Input() transparent = false;
 }

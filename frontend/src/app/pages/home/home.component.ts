@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
+import { skip } from "rxjs/operators";
 import { ThreadService } from "../../core/services/thread.service";
 import { CategoryService } from "../../core/services/category.service";
 import { AuthService } from "../../core/services/auth.service";
@@ -16,11 +17,13 @@ export class HomeComponent implements OnInit {
   featuredThreads: Thread[] = [];
   categories: Category[] = [];
   currentUser: User | null = null;
+  loading = false;
   loadingMore = false;
   currentPage = 1;
   totalThreads = 0;
   totalMembers = 0;
   lastPage = 1;
+  selectedCategoryId: string | null = null;
 
   // Post creation state
   isCreatingPost = false;
@@ -56,6 +59,33 @@ export class HomeComponent implements OnInit {
     this.featuredThreads = homeData.threads.data;
     this.lastPage = homeData.threads.lastPage;
     this.currentPage = homeData.threads.page;
+
+    // Get initial categoryId from query params
+    const initialCategoryId = this.route.snapshot.queryParams["categoryId"];
+    this.selectedCategoryId = initialCategoryId || null;
+
+    // Subscribe to query params changes (skip first emission since resolver already loaded data)
+    this.route.queryParams.pipe(skip(1)).subscribe((params) => {
+      const categoryId = params["categoryId"];
+      this.selectedCategoryId = categoryId || null;
+      this.loadThreads(categoryId);
+    });
+  }
+
+  loadThreads(categoryId?: string) {
+    this.loading = true;
+    this.threadService.getThreads(1, 5, categoryId).subscribe({
+      next: (response) => {
+        this.featuredThreads = response.data;
+        this.currentPage = response.page;
+        this.lastPage = response.lastPage;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error("Error loading threads:", error);
+        this.loading = false;
+      },
+    });
   }
 
   get hasMoreThreads(): boolean {
@@ -70,17 +100,19 @@ export class HomeComponent implements OnInit {
     this.loadingMore = true;
     const nextPage = this.currentPage + 1;
 
-    this.threadService.getThreads(nextPage, 5).subscribe({
-      next: (response) => {
-        this.featuredThreads = [...this.featuredThreads, ...response.data];
-        this.currentPage = response.page;
-        this.loadingMore = false;
-      },
-      error: (error) => {
-        console.error("Error loading more threads:", error);
-        this.loadingMore = false;
-      },
-    });
+    this.threadService
+      .getThreads(nextPage, 5, this.selectedCategoryId || undefined)
+      .subscribe({
+        next: (response) => {
+          this.featuredThreads = [...this.featuredThreads, ...response.data];
+          this.currentPage = response.page;
+          this.loadingMore = false;
+        },
+        error: (error) => {
+          console.error("Error loading more threads:", error);
+          this.loadingMore = false;
+        },
+      });
   }
 
   expandPostCreator() {

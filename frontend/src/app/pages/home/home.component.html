@@ -7,10 +7,25 @@
           <h3>Popular Topics</h3>
           <div class="topic-list">
             <a
+              class="topic-item"
+              [routerLink]="['/']"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              <div class="topic-content">
+                <i-lucide name="home" [size]="20"></i-lucide>
+                <span>All Topics</span>
+              </div>
+              <span class="thread-count-badge">{{
+                totalThreads | compactNumber
+              }}</span>
+            </a>
+            <a
               *ngFor="let category of categories"
               class="topic-item"
               [routerLink]="['/']"
               [queryParams]="{ categoryId: category.id }"
+              routerLinkActive="active"
             >
               <div class="topic-content">
                 <i-lucide
@@ -202,15 +217,17 @@
           </button>
         </div>
 
-        <div class="threads-list">
+        <div class="threads-list" *ngIf="!loading">
           <app-thread-card
             *ngFor="let thread of featuredThreads"
             [thread]="thread"
           ></app-thread-card>
         </div>
 
+        <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
         <!-- Load More Button -->
-        <div class="load-more-container" *ngIf="hasMoreThreads">
+        <div class="load-more-container" *ngIf="hasMoreThreads && !loading">
           <button
             class="action-btn load-more-btn"
             (click)="loadMoreThreads()"
