@@ -144,6 +144,7 @@ import {
                 <app-post-card
                   *ngFor="let post of posts"
                   [post]="post"
+                  [originalAuthorId]="thread ? thread.author.id : undefined"
                 ></app-post-card>
 
                 <!-- Load More Button -->

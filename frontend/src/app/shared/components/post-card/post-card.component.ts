@@ -18,6 +18,7 @@ import { newlineToBr } from "../../utils/text-formatter.util";
       <div class="comment-body">
         <div class="comment-header">
           <span class="author-name">{{ post.author.username }}</span>
+          <span class="author-badge" *ngIf="isOriginalAuthor">Author</span>
           <span class="dot">•</span>
           <span class="post-time">{{ post.createdAt | timeAgo }}</span>
         </div>
@@ -68,6 +69,7 @@ import { newlineToBr } from "../../utils/text-formatter.util";
               *ngFor="let reply of post.replies"
               [post]="reply"
               [isNested]="true"
+              [originalAuthorId]="originalAuthorId"
             ></app-post-card>
           </div>
         </div>
@@ -115,6 +117,16 @@ import { newlineToBr } from "../../utils/text-formatter.util";
         font-weight: 700;
         color: var(--text-dark);
         font-size: 0.75rem;
+      }
+
+      .author-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        background: var(--primary-100);
+        color: var(--primary);
+        border-radius: 4px;
+        font-weight: 600;
       }
 
       .dot {
@@ -191,6 +203,7 @@ import { newlineToBr } from "../../utils/text-formatter.util";
 export class PostCardComponent {
   @Input() post!: Post;
   @Input() isNested: boolean = false;
+  @Input() originalAuthorId?: string; // ID of the original thread author
   showReplies: boolean = false;
   loadingReplies: boolean = false;
 
@@ -198,6 +211,12 @@ export class PostCardComponent {
 
   get formattedContent(): string {
     return newlineToBr(this.post.content || "");
+  }
+
+  get isOriginalAuthor(): boolean {
+    return (
+      !!this.originalAuthorId && this.post.author.id === this.originalAuthorId
+    );
   }
 
   loadAndShowReplies() {
