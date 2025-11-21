@@ -1,9 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { switchMap } from "rxjs/operators";
-import { ThreadService } from "../../../core/services/thread.service";
 import { PostService } from "../../../core/services/post.service";
 import { Thread, Post } from "../../../core/models/models";
+import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
 
 @Component({
   selector: "app-thread-detail",
@@ -356,13 +355,25 @@ export class ThreadDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private threadService: ThreadService,
     private postService: PostService
   ) {}
 
   ngOnInit() {
-    const id = this.route.snapshot.params["id"];
-    this.loadThreadData(id);
+    this.loading = true;
+    const data = this.route.snapshot.data[
+      "threadDetailData"
+    ] as ThreadDetailData;
+    if (data) {
+      this.thread = data.thread;
+      this.posts = (data.posts.data || []).map((post: Post) => ({
+        ...post,
+        replies: [],
+      }));
+      this.totalPosts = data.posts.total;
+      this.lastPage = data.posts.lastPage;
+      this.currentPage = data.posts.page;
+    }
+    this.loading = false;
   }
 
   getTotalCommentCount(): number {
@@ -373,34 +384,7 @@ export class ThreadDetailComponent implements OnInit {
     return this.currentPage < this.lastPage;
   }
 
-  loadThreadData(id: string) {
-    this.loading = true;
-    this.currentPage = 1;
-    this.threadService
-      .getThread(id)
-      .pipe(
-        switchMap((thread) => {
-          this.thread = thread;
-          return this.postService.getPostsByThread(id, this.currentPage);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          this.posts = response.data.map((post: Post) => ({
-            ...post,
-            replies: [], // Initialize with empty replies for lazy loading
-          }));
-          this.totalPosts = response.total;
-          this.lastPage = response.lastPage;
-          this.currentPage = response.page;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error("Error loading thread data:", error);
-          this.loading = false;
-        },
-      });
-  }
+  // loadThreadData removed, now handled by resolver
 
   loadMorePosts() {
     if (!this.thread || this.loadingMore || !this.hasMorePosts) {
@@ -409,7 +393,6 @@ export class ThreadDetailComponent implements OnInit {
 
     this.loadingMore = true;
     const nextPage = this.currentPage + 1;
-
     this.postService.getPostsByThread(this.thread.id, nextPage).subscribe({
       next: (response) => {
         const newPosts = response.data.map((post: Post) => ({

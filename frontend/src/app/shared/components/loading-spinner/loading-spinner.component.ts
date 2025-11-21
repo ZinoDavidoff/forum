@@ -10,7 +10,7 @@ import { Component, Input } from "@angular/core";
           <div class="ripple-circle ripple-2"></div>
           <div class="ripple-circle ripple-3"></div>
           <div class="baby-icon">
-            <i-lucide name="baby" [size]="64"></i-lucide>
+            <i-lucide name="baby" [size]="56"></i-lucide>
           </div>
         </div>
       </div>
@@ -72,9 +72,11 @@ import { Component, Input } from "@angular/core";
       .baby-icon {
         position: relative;
         z-index: 10;
-        color: var(--primary-500);
+        color: var(--primary-100);
         line-height: 0;
         border-radius: 50%;
+        background: var(--primary);
+        padding: .5rem;
       }
 
       ::ng-deep .baby-icon svg {

@@ -9,7 +9,9 @@ import { ProfileComponent } from "./pages/profile/profile.component";
 import { MessagesComponent } from "./pages/messages/messages.component";
 import { NotificationsComponent } from "./pages/notifications/notifications.component";
 import { AuthGuard } from "./core/guards/auth.guard";
+
 import { HomeResolver } from "./core/resolvers/home.resolver";
+import { ThreadDetailResolver } from "./core/resolvers/thread-detail.resolver";
 
 const routes: Routes = [
   { path: "", component: HomeComponent, resolve: { homeData: HomeResolver } },
@@ -20,7 +22,11 @@ const routes: Routes = [
     component: ThreadCreateComponent,
     canActivate: [AuthGuard],
   },
-  { path: "threads/:id", component: ThreadDetailComponent },
+  {
+    path: "threads/:id",
+    component: ThreadDetailComponent,
+    resolve: { threadDetailData: ThreadDetailResolver },
+  },
   { path: "profile/:id", component: ProfileComponent },
   { path: "messages", component: MessagesComponent, canActivate: [AuthGuard] },
   {
