@@ -11,7 +11,7 @@ import { delay } from "rxjs/operators";
 @Injectable()
 export class DelayInterceptor implements HttpInterceptor {
   // Set delay time in milliseconds (default: 500ms = 0.5 second)
-  private delayTime = 500;
+  private delayTime = 1500;
 
   intercept(
     request: HttpRequest<unknown>,

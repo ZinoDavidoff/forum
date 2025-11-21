@@ -1,10 +1,11 @@
 import { Component, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
 import { ThreadService } from "../../core/services/thread.service";
 import { CategoryService } from "../../core/services/category.service";
 import { AuthService } from "../../core/services/auth.service";
 import { UserService } from "../../core/services/user.service";
 import { Thread, Category, User } from "../../core/models/models";
+import { HomeData } from "../../core/resolvers/home.resolver";
 
 @Component({
   selector: "app-home",
@@ -15,7 +16,6 @@ export class HomeComponent implements OnInit {
   featuredThreads: Thread[] = [];
   categories: Category[] = [];
   currentUser: User | null = null;
-  loading = true;
   loadingMore = false;
   currentPage = 1;
   totalThreads = 0;
@@ -39,38 +39,23 @@ export class HomeComponent implements OnInit {
     private categoryService: CategoryService,
     private authService: AuthService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
     });
-    this.loadData();
-  }
 
-  loadData() {
-    this.categoryService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-    });
-
-    this.userService.getStats().subscribe({
-      next: (stats) => {
-        this.totalMembers = stats.totalMembers;
-        this.totalThreads = stats.totalThreads;
-      },
-    });
-
-    this.threadService.getThreads(1, 5).subscribe({
-      next: (response) => {
-        this.featuredThreads = response.data;
-        this.lastPage = response.lastPage;
-        this.currentPage = response.page;
-        this.loading = false;
-      },
-    });
+    // Get data from resolver
+    const homeData = this.route.snapshot.data["homeData"] as HomeData;
+    this.categories = homeData.categories;
+    this.totalMembers = homeData.stats.totalMembers;
+    this.totalThreads = homeData.stats.totalThreads;
+    this.featuredThreads = homeData.threads.data;
+    this.lastPage = homeData.threads.lastPage;
+    this.currentPage = homeData.threads.page;
   }
 
   get hasMoreThreads(): boolean {

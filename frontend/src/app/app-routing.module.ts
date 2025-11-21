@@ -9,9 +9,10 @@ import { ProfileComponent } from "./pages/profile/profile.component";
 import { MessagesComponent } from "./pages/messages/messages.component";
 import { NotificationsComponent } from "./pages/notifications/notifications.component";
 import { AuthGuard } from "./core/guards/auth.guard";
+import { HomeResolver } from "./core/resolvers/home.resolver";
 
 const routes: Routes = [
-  { path: "", component: HomeComponent },
+  { path: "", component: HomeComponent, resolve: { homeData: HomeResolver } },
   { path: "login", component: LoginComponent },
   { path: "register", component: RegisterComponent },
   {
