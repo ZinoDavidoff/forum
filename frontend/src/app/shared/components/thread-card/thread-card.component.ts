@@ -1,5 +1,6 @@
 import { Component, Input } from "@angular/core";
 import { Thread } from "../../../core/models/models";
+import { newlineToBr, stripHtml } from "../../utils/text-formatter.util";
 
 @Component({
   selector: "app-thread-card",
@@ -26,7 +27,7 @@ import { Thread } from "../../../core/models/models";
         </div>
 
         <h3 class="thread-title">{{ thread.title }}</h3>
-        <p class="thread-excerpt">{{ thread.content.substring(0, 200) }}...</p>
+        <p class="thread-excerpt" [innerHTML]="getExcerptHtml()"></p>
 
         <div class="thread-actions">
           <button class="action-btn upvote-btn">
@@ -141,4 +142,18 @@ import { Thread } from "../../../core/models/models";
 })
 export class ThreadCardComponent {
   @Input() thread!: Thread;
+
+  getExcerpt(): string {
+    if (!this.thread?.content) return "";
+    const textContent = stripHtml(this.thread.content);
+    if (textContent.length <= 200) {
+      return textContent;
+    }
+    return textContent.substring(0, 200) + "...";
+  }
+
+  getExcerptHtml(): string {
+    const excerpt = this.getExcerpt();
+    return newlineToBr(excerpt);
+  }
 }

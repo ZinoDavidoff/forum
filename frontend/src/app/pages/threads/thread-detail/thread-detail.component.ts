@@ -3,6 +3,10 @@ import { ActivatedRoute } from "@angular/router";
 import { PostService } from "../../../core/services/post.service";
 import { Thread, Post, Category } from "../../../core/models/models";
 import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
+import {
+  newlineToBr,
+  stripHtml,
+} from "../../../shared/utils/text-formatter.util";
 
 @Component({
   selector: "app-thread-detail",
@@ -73,7 +77,16 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
                   </div>
                 </div>
                 <h1 class="thread-title">{{ thread.title }}</h1>
-                <div class="thread-content" [innerHTML]="thread.content"></div>
+                <div class="thread-content">
+                  <span [innerHTML]="displayedContentHtml"></span>
+                  <button
+                    *ngIf="isContentLong"
+                    class="see-more-btn"
+                    (click)="toggleContent()"
+                  >
+                    {{ isContentExpanded ? "See less" : "See more" }}
+                  </button>
+                </div>
 
                 <div class="thread-actions">
                   <button class="action-btn upvote-btn">
@@ -284,6 +297,24 @@ import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver
         margin-bottom: var(--spacing-md);
         color: var(--text-dark);
         font-size: 0.875rem;
+        line-height: 1.6;
+      }
+
+      .see-more-btn {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 4px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+
+      .see-more-btn:hover {
+        color: var(--primary-600);
       }
 
       .thread-actions {
@@ -444,6 +475,7 @@ export class ThreadDetailComponent implements OnInit {
   currentPage = 1;
   totalPosts = 0;
   lastPage = 1;
+  isContentExpanded = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -478,6 +510,30 @@ export class ThreadDetailComponent implements OnInit {
 
   get hasMorePosts(): boolean {
     return this.currentPage < this.lastPage;
+  }
+
+  get isContentLong(): boolean {
+    if (!this.thread?.content) return false;
+    const textContent = stripHtml(this.thread.content);
+    return textContent.length > 300;
+  }
+
+  get displayedContent(): string {
+    if (!this.thread?.content) return "";
+    if (this.isContentExpanded || !this.isContentLong) {
+      return this.thread.content;
+    }
+    const textContent = stripHtml(this.thread.content);
+    return textContent.substring(0, 300) + "...";
+  }
+
+  get displayedContentHtml(): string {
+    const content = this.displayedContent;
+    return newlineToBr(content);
+  }
+
+  toggleContent(): void {
+    this.isContentExpanded = !this.isContentExpanded;
   }
 
   // loadThreadData removed, now handled by resolver

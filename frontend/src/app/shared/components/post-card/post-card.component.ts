@@ -1,6 +1,7 @@
 import { Component, Input } from "@angular/core";
 import { Post } from "../../../core/models/models";
 import { PostService } from "../../../core/services/post.service";
+import { newlineToBr } from "../../utils/text-formatter.util";
 
 @Component({
   selector: "app-post-card",
@@ -20,7 +21,7 @@ import { PostService } from "../../../core/services/post.service";
           <span class="dot">•</span>
           <span class="post-time">{{ post.createdAt | timeAgo }}</span>
         </div>
-        <div class="comment-content" [innerHTML]="post.content"></div>
+        <div class="comment-content" [innerHTML]="formattedContent"></div>
         <div class="comment-actions">
           <button class="action-btn upvote-btn">
             <i-lucide name="chevron-up" [size]="16"></i-lucide>
@@ -194,6 +195,10 @@ export class PostCardComponent {
   loadingReplies: boolean = false;
 
   constructor(private postService: PostService) {}
+
+  get formattedContent(): string {
+    return newlineToBr(this.post.content || "");
+  }
 
   loadAndShowReplies() {
     if (this.post.replies && this.post.replies.length > 0) {
