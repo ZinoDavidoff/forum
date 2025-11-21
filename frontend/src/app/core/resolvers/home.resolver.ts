@@ -31,8 +31,15 @@ export class HomeResolver implements Resolve<HomeData> {
     state: RouterStateSnapshot
   ): Observable<HomeData> {
     const categoryId = route.queryParams["categoryId"];
+    const sort = route.queryParams["sort"] || "hot";
     return forkJoin({
-      threads: this.threadService.getThreads(1, 5, categoryId || undefined),
+      threads: this.threadService.getThreads(
+        1,
+        5,
+        categoryId || undefined,
+        undefined,
+        sort
+      ),
       categories: this.categoryService.getCategories(),
       stats: this.userService.getStats(),
     });

@@ -23,9 +23,10 @@ export class PostsController {
   findByThread(
     @Param("threadId") threadId: string,
     @Query("page") page: number = 1,
-    @Query("limit") limit: number = 20
+    @Query("limit") limit: number = 20,
+    @Query("sort") sort: string = "best"
   ) {
-    return this.postsService.findByThread(threadId, page, limit);
+    return this.postsService.findByThread(threadId, page, limit, sort);
   }
 
   @Get(":id/replies")

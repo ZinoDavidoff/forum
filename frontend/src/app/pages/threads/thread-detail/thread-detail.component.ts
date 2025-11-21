@@ -114,16 +114,32 @@ import {
 
               <div class="comments-section">
                 <div class="comment-sort card">
-                  <button class="sort-btn active">
+                  <button
+                    class="sort-btn"
+                    [class.active]="selectedSort === 'best'"
+                    (click)="selectSort('best')"
+                  >
                     <i-lucide name="award" [size]="18"></i-lucide> Best
                   </button>
-                  <button class="sort-btn">
+                  <button
+                    class="sort-btn"
+                    [class.active]="selectedSort === 'top'"
+                    (click)="selectSort('top')"
+                  >
                     <i-lucide name="trending-up" [size]="18"></i-lucide> Top
                   </button>
-                  <button class="sort-btn">
+                  <button
+                    class="sort-btn"
+                    [class.active]="selectedSort === 'new'"
+                    (click)="selectSort('new')"
+                  >
                     <i-lucide name="star" [size]="18"></i-lucide> New
                   </button>
                 </div>
+
+                <app-loading-spinner
+                  *ngIf="loadingMore && posts.length === 0"
+                ></app-loading-spinner>
 
                 <app-post-card
                   *ngFor="let post of posts"
@@ -131,7 +147,10 @@ import {
                 ></app-post-card>
 
                 <!-- Load More Button -->
-                <div class="load-more-container" *ngIf="hasMorePosts">
+                <div
+                  class="load-more-container"
+                  *ngIf="hasMorePosts && !loadingMore"
+                >
                   <button
                     class="action-btn load-more-btn"
                     (click)="loadMorePosts()"
@@ -476,6 +495,7 @@ export class ThreadDetailComponent implements OnInit {
   totalPosts = 0;
   lastPage = 1;
   isContentExpanded = false;
+  selectedSort: string = "best";
 
   constructor(
     private route: ActivatedRoute,
@@ -545,18 +565,47 @@ export class ThreadDetailComponent implements OnInit {
 
     this.loadingMore = true;
     const nextPage = this.currentPage + 1;
-    this.postService.getPostsByThread(this.thread.id, nextPage).subscribe({
+    this.postService
+      .getPostsByThread(this.thread.id, nextPage, 20, this.selectedSort)
+      .subscribe({
+        next: (response) => {
+          const newPosts = response.data.map((post: Post) => ({
+            ...post,
+            replies: [], // Initialize with empty replies for lazy loading
+          }));
+          this.posts = [...this.posts, ...newPosts];
+          this.currentPage = response.page;
+          this.loadingMore = false;
+        },
+        error: (error) => {
+          console.error("Error loading more posts:", error);
+          this.loadingMore = false;
+        },
+      });
+  }
+
+  selectSort(sort: string) {
+    if (this.selectedSort === sort || !this.thread) {
+      return;
+    }
+    this.selectedSort = sort;
+    this.loadingMore = true;
+    this.posts = []; // Clear posts to show loading spinner
+
+    // Reload posts with new sort order
+    this.postService.getPostsByThread(this.thread.id, 1, 20, sort).subscribe({
       next: (response) => {
-        const newPosts = response.data.map((post: Post) => ({
+        this.posts = response.data.map((post: Post) => ({
           ...post,
-          replies: [], // Initialize with empty replies for lazy loading
+          replies: [],
         }));
-        this.posts = [...this.posts, ...newPosts];
         this.currentPage = response.page;
+        this.totalPosts = response.total;
+        this.lastPage = response.lastPage;
         this.loadingMore = false;
       },
       error: (error) => {
-        console.error("Error loading more posts:", error);
+        console.error("Error loading posts:", error);
         this.loadingMore = false;
       },
     });

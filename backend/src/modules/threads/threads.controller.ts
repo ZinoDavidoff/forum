@@ -24,9 +24,10 @@ export class ThreadsController {
     @Query("page") page: number = 1,
     @Query("limit") limit: number = 20,
     @Query("categoryId") categoryId?: string,
-    @Query("search") search?: string
+    @Query("search") search?: string,
+    @Query("sort") sort: string = "hot"
   ) {
-    return this.threadsService.findAll(page, limit, categoryId, search);
+    return this.threadsService.findAll(page, limit, categoryId, search, sort);
   }
 
   @Get(":id")

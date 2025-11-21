@@ -15,11 +15,13 @@ export class PostService {
   getPostsByThread(
     threadId: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    sort: string = "best"
   ): Observable<any> {
     const params = new HttpParams()
       .set("page", page.toString())
-      .set("limit", limit.toString());
+      .set("limit", limit.toString())
+      .set("sort", sort);
 
     return this.http.get(`${this.apiUrl}/thread/${threadId}`, { params });
   }

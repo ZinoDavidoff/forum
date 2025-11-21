@@ -24,6 +24,7 @@ export class HomeComponent implements OnInit {
   totalMembers = 0;
   lastPage = 1;
   selectedCategoryId: string | null = null;
+  selectedSort: string = "hot";
 
   // Post creation state
   isCreatingPost = false;
@@ -72,20 +73,23 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  loadThreads(categoryId?: string) {
+  loadThreads(categoryId?: string, sort?: string) {
     this.loading = true;
-    this.threadService.getThreads(1, 5, categoryId).subscribe({
-      next: (response) => {
-        this.featuredThreads = response.data;
-        this.currentPage = response.page;
-        this.lastPage = response.lastPage;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error("Error loading threads:", error);
-        this.loading = false;
-      },
-    });
+    const sortParam = sort || this.selectedSort;
+    this.threadService
+      .getThreads(1, 5, categoryId, undefined, sortParam)
+      .subscribe({
+        next: (response) => {
+          this.featuredThreads = response.data;
+          this.currentPage = response.page;
+          this.lastPage = response.lastPage;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error("Error loading threads:", error);
+          this.loading = false;
+        },
+      });
   }
 
   get hasMoreThreads(): boolean {
@@ -101,7 +105,13 @@ export class HomeComponent implements OnInit {
     const nextPage = this.currentPage + 1;
 
     this.threadService
-      .getThreads(nextPage, 5, this.selectedCategoryId || undefined)
+      .getThreads(
+        nextPage,
+        5,
+        this.selectedCategoryId || undefined,
+        undefined,
+        this.selectedSort
+      )
       .subscribe({
         next: (response) => {
           this.featuredThreads = [...this.featuredThreads, ...response.data];
@@ -113,6 +123,14 @@ export class HomeComponent implements OnInit {
           this.loadingMore = false;
         },
       });
+  }
+
+  selectSort(sort: string) {
+    if (this.selectedSort === sort) {
+      return;
+    }
+    this.selectedSort = sort;
+    this.loadThreads(this.selectedCategoryId || undefined, sort);
   }
 
   expandPostCreator() {

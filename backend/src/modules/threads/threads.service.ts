@@ -23,7 +23,8 @@ export class ThreadsService {
     page: number = 1,
     limit: number = 20,
     categoryId?: string,
-    search?: string
+    search?: string,
+    sort: string = "hot"
   ) {
     const where: any = {};
 
@@ -35,11 +36,31 @@ export class ThreadsService {
       where.title = ILike(`%${search}%`);
     }
 
+    // Determine sorting order based on sort parameter
+    let order: any = { isPinned: "DESC" };
+
+    switch (sort) {
+      case "new":
+        order.createdAt = "DESC";
+        break;
+      case "top":
+        // Sort by upvotes (highest first)
+        order.upvoteCount = "DESC";
+        order.createdAt = "DESC"; // Secondary sort
+        break;
+      case "hot":
+      default:
+        // Hot: Recent activity (updatedAt) + engagement (upvotes + replies)
+        order.updatedAt = "DESC";
+        order.upvoteCount = "DESC";
+        break;
+    }
+
     const [threads, total] = await this.threadsRepository.findAndCount({
       where,
       skip: (page - 1) * limit,
       take: limit,
-      order: { isPinned: "DESC", updatedAt: "DESC" },
+      order,
       relations: ["author", "category", "lastPost"],
     });
 

@@ -16,7 +16,34 @@ export class PostsService {
     private usersService: UsersService
   ) {}
 
-  async findByThread(threadId: string, page: number = 1, limit: number = 20) {
+  async findByThread(
+    threadId: string,
+    page: number = 1,
+    limit: number = 20,
+    sort: string = "best"
+  ) {
+    // Determine sorting order based on sort parameter
+    let order: any = {};
+
+    switch (sort) {
+      case "new":
+        order.createdAt = "DESC";
+        break;
+      case "top":
+        // Sort by upvotes (highest first)
+        order.upvoteCount = "DESC";
+        order.createdAt = "ASC"; // Secondary sort
+        break;
+      case "best":
+      default:
+        // Best: Balance of upvotes and downvotes (net score)
+        // We'll sort by upvotes minus downvotes, then by creation date
+        order.upvoteCount = "DESC";
+        order.downvoteCount = "ASC";
+        order.createdAt = "ASC";
+        break;
+    }
+
     // Get only root posts (posts with no parent) for this thread
     const [rootPosts, total] = await this.postsRepository.findAndCount({
       where: {
@@ -24,7 +51,7 @@ export class PostsService {
         parentPost: null,
         isDeleted: false,
       },
-      order: { createdAt: "ASC" },
+      order,
       relations: ["author", "reactions"],
       skip: (page - 1) * limit,
       take: limit,

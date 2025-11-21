@@ -31,9 +31,10 @@ export class ThreadDetailResolver implements Resolve<ThreadDetailData> {
     state: RouterStateSnapshot
   ): Observable<ThreadDetailData> {
     const id = route.params["id"];
+    const sort = route.queryParams["sort"] || "best";
     return forkJoin({
       thread: this.threadService.getThread(id),
-      posts: this.postService.getPostsByThread(id, 1),
+      posts: this.postService.getPostsByThread(id, 1, 20, sort),
       categories: this.categoryService.getCategories(),
     });
   }
