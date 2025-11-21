@@ -150,7 +150,7 @@ import {
                 <!-- Load More Button -->
                 <div
                   class="load-more-container"
-                  *ngIf="hasMorePosts && !loadingMore"
+                  *ngIf="hasMorePosts && posts.length > 0"
                 >
                   <button
                     class="action-btn load-more-btn"
@@ -158,7 +158,7 @@ import {
                     [disabled]="loadingMore"
                   >
                     <i-lucide
-                      name="loader"
+                      name="loader-2"
                       [size]="16"
                       *ngIf="loadingMore"
                       class="spinner"
