@@ -179,7 +179,7 @@
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: var(--white);
+  background: var(--bg-primary);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);

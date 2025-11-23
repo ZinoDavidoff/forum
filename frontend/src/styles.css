@@ -292,7 +292,7 @@ select:focus {
   outline: none;
   border-color: var(--primary-400);
   box-shadow: 0 0 0 4px rgba(255, 120, 81, 0.15);
-  background: var(--white);
+  background: var(--bg-primary);
 }
 
 input::placeholder,
@@ -311,7 +311,7 @@ textarea::placeholder {
 }
 
 .badge-pink {
-  color: var(--danger);
+  color: var(--primary);
 }
 .badge-blue {
   color: var(--primary-600);

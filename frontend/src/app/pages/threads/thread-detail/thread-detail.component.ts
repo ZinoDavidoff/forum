@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PostService } from "../../../core/services/post.service";
+import { ThreadService } from "../../../core/services/thread.service";
 import { Thread, Post, Category } from "../../../core/models/models";
 import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
 import {
@@ -64,7 +65,147 @@ import { AuthService } from "../../../core/services/auth.service";
           <!-- Main Content -->
           <main class="main-feed">
             <div *ngIf="thread" class="thread-detail">
-              <div class="card thread-post">
+              <!-- Edit Mode - Replace entire card with editor-container -->
+              <div class="card thread-edit-card" *ngIf="isEditingThread">
+                <div class="editor-container">
+                  <!-- Category Selection -->
+                  <div class="editor-row">
+                    <div
+                      class="custom-select"
+                      (click)="toggleCategoryDropdown()"
+                    >
+                      <span
+                        class="selected-category"
+                        *ngIf="editThreadData.categoryId"
+                      >
+                        {{ getCategoryName(editThreadData.categoryId) }}
+                      </span>
+                      <span
+                        class="selected-category placeholder"
+                        *ngIf="!editThreadData.categoryId"
+                      >
+                        Select a category...
+                      </span>
+                      <i-lucide
+                        name="chevron-down"
+                        [size]="16"
+                        class="dropdown-icon"
+                      ></i-lucide>
+
+                      <div
+                        class="category-dropdown"
+                        *ngIf="showCategoryDropdown"
+                      >
+                        <div
+                          *ngFor="let category of categories"
+                          class="category-option"
+                          (click)="
+                            selectEditCategory(category.id);
+                            $event.stopPropagation()
+                          "
+                        >
+                          {{ category.name }}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      class="editor-close-btn"
+                      (click)="cancelEditingThread()"
+                    >
+                      <i-lucide name="x" [size]="18"></i-lucide>
+                    </button>
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <!-- Title -->
+                  <div class="editor-row">
+                    <input
+                      type="text"
+                      [(ngModel)]="editThreadData.title"
+                      placeholder="Title"
+                      class="editor-title"
+                      maxlength="200"
+                      required
+                    />
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <!-- Content -->
+                  <div class="editor-row">
+                    <textarea
+                      [(ngModel)]="editThreadData.content"
+                      placeholder="Write your post content here..."
+                      class="editor-content"
+                      rows="8"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <!-- Tags -->
+                  <div class="editor-row">
+                    <input
+                      type="text"
+                      [(ngModel)]="editThreadData.tags"
+                      placeholder="Add tags (comma separated)"
+                      class="editor-tags"
+                    />
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <!-- Footer with Lock and Actions -->
+                  <div class="editor-footer">
+                    <button
+                      class="lock-toggle"
+                      (click)="
+                        editThreadData.isLocked = !editThreadData.isLocked
+                      "
+                      [class.locked]="editThreadData.isLocked"
+                    >
+                      <i-lucide name="lock" [size]="14"></i-lucide>
+                      <span>{{
+                        editThreadData.isLocked ? "Locked" : "Lock post"
+                      }}</span>
+                    </button>
+
+                    <div class="editor-actions">
+                      <button
+                        class="btn btn-outline btn-sm"
+                        (click)="cancelEditingThread()"
+                        [disabled]="submittingThreadEdit"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        class="btn btn-primary btn-sm"
+                        (click)="saveThreadEdit()"
+                        [disabled]="
+                          !editThreadData.title ||
+                          !editThreadData.content ||
+                          !editThreadData.categoryId ||
+                          submittingThreadEdit
+                        "
+                      >
+                        <i-lucide
+                          name="loader-2"
+                          [size]="14"
+                          *ngIf="submittingThreadEdit"
+                          class="spinner"
+                        ></i-lucide>
+                        <span *ngIf="!submittingThreadEdit">Post</span>
+                        <span *ngIf="submittingThreadEdit">Posting...</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- View Mode -->
+              <div class="card thread-post" *ngIf="!isEditingThread">
                 <div class="thread-meta">
                   <img
                     [src]="thread.author.avatar || 'assets/default-avatar.svg'"
@@ -79,6 +220,39 @@ import { AuthService } from "../../../core/services/auth.service";
                       <span class="time-ago">{{
                         thread.createdAt | timeAgo
                       }}</span>
+                      <span class="dot">•</span>
+                      <span
+                        class="edited-indicator"
+                        *ngIf="
+                          thread.updatedAt &&
+                          thread.updatedAt !== thread.createdAt
+                        "
+                        >edited</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="thread-actions-menu"
+                    *ngIf="canEditOrDeleteThread()"
+                  >
+                    <button class="menu-btn" (click)="toggleThreadMenu($event)">
+                      <i-lucide name="more-vertical" [size]="20"></i-lucide>
+                    </button>
+                    <div class="dropdown-menu" *ngIf="showThreadMenu">
+                      <button
+                        class="dropdown-item"
+                        (click)="startEditingThread()"
+                      >
+                        <i-lucide name="edit-3" [size]="16"></i-lucide>
+                        Edit
+                      </button>
+                      <button
+                        class="dropdown-item delete"
+                        (click)="confirmDeleteThread()"
+                      >
+                        <i-lucide name="trash" [size]="16"></i-lucide>
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -231,6 +405,7 @@ import { AuthService } from "../../../core/services/auth.service";
                   [threadId]="thread.id"
                   [isThreadLocked]="thread.isLocked"
                   (replyAdded)="onReplyAdded()"
+                  (postDeleted)="onPostDeleted($event)"
                 ></app-post-card>
 
                 <!-- Load More Button -->
@@ -255,6 +430,20 @@ import { AuthService } from "../../../core/services/auth.service";
                 </div>
               </div>
             </div>
+
+            <!-- Delete Confirmation Modal -->
+            <app-confirm-modal
+              [isOpen]="showDeleteThreadModal"
+              [title]="'Delete Thread'"
+              [message]="
+                'Are you sure you want to delete this thread? This action cannot be undone.'
+              "
+              [confirmText]="'Delete'"
+              [loadingText]="'Deleting...'"
+              [isLoading]="deletingThread"
+              (confirm)="deleteThread()"
+              (close)="showDeleteThreadModal = false"
+            ></app-confirm-modal>
           </main>
 
           <!-- Right Sidebar -->
@@ -374,11 +563,217 @@ import { AuthService } from "../../../core/services/auth.service";
         margin-bottom: var(--spacing-md);
       }
 
+      .thread-edit-card {
+        padding: 0;
+        margin-bottom: var(--spacing-md);
+      }
+
+      .edit-label {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        flex: 1;
+      }
+
+      /* Custom Select for Category */
+      .custom-select {
+        position: relative;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .selected-category {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        width: 100%;
+      }
+
+      .selected-category.placeholder {
+        color: var(--text-tertiary);
+        font-weight: 400;
+      }
+
+      .dropdown-icon {
+        color: var(--text-secondary);
+        transition: transform 0.2s ease;
+      }
+
+      .custom-select:hover .dropdown-icon {
+        color: var(--text-primary);
+      }
+
+      .category-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: var(--bg-primary);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 100;
+      }
+
+      .category-option {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .category-option:hover {
+        background: var(--gray-50);
+      }
+
+      .category-option:first-child {
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+
+      .category-option:last-child {
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+      }
+
+      /* Editor Tags */
+      .editor-tags {
+        width: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        font-size: 0.75rem;
+        color: var(--text-light);
+        outline: none;
+        border-radius: 0;
+      }
+
+      .editor-tags:hover,
+      .editor-tags:focus {
+        background: transparent;
+        border: none;
+        outline: none;
+        box-shadow: none;
+      }
+
+      .editor-tags::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      /* Lock Toggle */
+      .lock-toggle {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        background: none;
+        border: none;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.1s ease;
+      }
+
+      .lock-toggle:hover {
+        background: var(--gray-100);
+        color: var(--text-primary);
+      }
+
+      .lock-toggle.locked {
+        color: var(--primary);
+        background: var(--primary-50);
+      }
+
+      .lock-toggle.locked:hover {
+        background: var(--primary-100);
+      }
+
       .thread-meta {
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
         margin-bottom: var(--spacing-md);
+        position: relative;
+      }
+
+      .thread-actions-menu {
+        margin-left: auto;
+        position: relative;
+      }
+
+      .menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        color: var(--text-secondary);
+      }
+
+      .menu-btn:hover {
+        background: var(--gray-100);
+        color: var(--text-primary);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        background: var(--bg-primary);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        min-width: 150px;
+        z-index: 100;
+        animation: fadeIn 0.15s ease-out;
+      }
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        background: none;
+        color: var(--text-dark);
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        text-align: left;
+      }
+
+      .dropdown-item:hover {
+        background: var(--gray-50);
+      }
+
+      .dropdown-item.delete {
+        color: var(--primary);
+      }
+
+      .dropdown-item.delete:hover {
+        background: var(--primary-50);
+      }
+
+      .dropdown-item:first-child {
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+
+      .dropdown-item:last-child {
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
       }
 
       .author-name {
@@ -389,6 +784,18 @@ import { AuthService } from "../../../core/services/auth.service";
 
       .post-time {
         font-size: 0.75rem;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .dot {
+        color: var(--gray-400);
+        font-size: 0.75rem;
+      }
+
+      .edited-indicator {
         color: var(--text-light);
       }
 
@@ -572,6 +979,7 @@ import { AuthService } from "../../../core/services/auth.service";
       .editor-container {
         display: flex;
         flex-direction: column;
+        animation: fadeIn 0.2s ease-out;
       }
 
       .editor-row {
@@ -579,6 +987,37 @@ import { AuthService } from "../../../core/services/auth.service";
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
+      }
+
+      .editor-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 0;
+      }
+
+      .editor-title {
+        width: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        outline: none;
+        border-radius: 0;
+      }
+
+      .editor-title:hover,
+      .editor-title:focus {
+        background: transparent;
+        border: none;
+        outline: none;
+        box-shadow: none;
+      }
+
+      .editor-title::placeholder {
+        color: var(--text-tertiary);
+        font-weight: 400;
       }
 
       .reply-label {
@@ -716,11 +1155,25 @@ export class ThreadDetailComponent implements OnInit {
   showReplyBox: boolean = false;
   replyContent: string = "";
   submittingReply: boolean = false;
+  showThreadMenu: boolean = false;
+  showDeleteThreadModal: boolean = false;
+  deletingThread: boolean = false;
+  isEditingThread: boolean = false;
+  editThreadData: any = {
+    title: "",
+    content: "",
+    categoryId: "",
+    tags: "",
+    isLocked: false,
+  };
+  submittingThreadEdit: boolean = false;
+  showCategoryDropdown: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private postService: PostService,
+    private threadService: ThreadService,
     private reactionService: ReactionService,
     private bookmarkService: BookmarkService,
     private authService: AuthService
@@ -758,6 +1211,11 @@ export class ThreadDetailComponent implements OnInit {
         this.loadBookmarkStatus();
       }
     }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", () => {
+      this.showThreadMenu = false;
+    });
   }
 
   loadUserReaction() {
@@ -975,6 +1433,15 @@ export class ThreadDetailComponent implements OnInit {
     // - thread.replyCount tracks ALL comments (top-level + nested)
   }
 
+  onPostDeleted(postId: string) {
+    // Remove the deleted post from the posts array
+    this.posts = this.posts.filter((p) => p.id !== postId);
+    if (this.thread) {
+      this.thread.replyCount = Math.max(0, this.thread.replyCount - 1);
+    }
+    this.totalPosts = Math.max(0, this.totalPosts - 1);
+  }
+
   getTotalCommentCount(): number {
     // Return total count of ALL comments (including nested replies)
     // thread.replyCount includes all nested replies
@@ -1057,6 +1524,128 @@ export class ThreadDetailComponent implements OnInit {
       error: (error) => {
         console.error("Error loading posts:", error);
         this.loadingMore = false;
+      },
+    });
+  }
+
+  canEditOrDeleteThread(): boolean {
+    return (
+      this.currentUser &&
+      this.thread &&
+      this.currentUser.id === this.thread.author.id
+    );
+  }
+
+  toggleThreadMenu(event: Event) {
+    event.stopPropagation();
+    this.showThreadMenu = !this.showThreadMenu;
+  }
+
+  getCategoryName(categoryId: string): string {
+    const category = this.categories.find((c) => c.id === categoryId);
+    return category ? category.name : "";
+  }
+
+  toggleCategoryDropdown() {
+    this.showCategoryDropdown = !this.showCategoryDropdown;
+  }
+
+  selectEditCategory(categoryId: string) {
+    this.editThreadData.categoryId = categoryId;
+    this.showCategoryDropdown = false;
+  }
+
+  startEditingThread() {
+    if (!this.thread) return;
+    this.editThreadData = {
+      title: this.thread.title,
+      content: this.thread.content,
+      categoryId: this.thread.category?.id || "",
+      tags: this.thread.tags ? this.thread.tags.join(", ") : "",
+      isLocked: this.thread.isLocked || false,
+    };
+    this.isEditingThread = true;
+    this.showThreadMenu = false;
+  }
+
+  cancelEditingThread() {
+    this.isEditingThread = false;
+    this.showCategoryDropdown = false;
+    this.editThreadData = {
+      title: "",
+      content: "",
+      categoryId: "",
+      tags: "",
+      isLocked: false,
+    };
+  }
+
+  saveThreadEdit() {
+    if (
+      !this.thread ||
+      !this.editThreadData.title ||
+      !this.editThreadData.content ||
+      !this.editThreadData.categoryId
+    ) {
+      return;
+    }
+
+    this.submittingThreadEdit = true;
+    const updateData: any = {
+      title: this.editThreadData.title,
+      content: this.editThreadData.content,
+      categoryId: this.editThreadData.categoryId,
+      tags: this.editThreadData.tags
+        ? this.editThreadData.tags
+            .split(",")
+            .map((t: string) => t.trim())
+            .filter((t: string) => t)
+        : [],
+    };
+
+    if (this.editThreadData.isLocked) {
+      updateData.isLocked = true;
+    }
+
+    this.threadService.updateThread(this.thread.id, updateData).subscribe({
+      next: (updatedThread) => {
+        if (this.thread) {
+          this.thread.title = updatedThread.title;
+          this.thread.content = updatedThread.content;
+          this.thread.category = updatedThread.category;
+          this.thread.tags = updatedThread.tags;
+          this.thread.isLocked = updatedThread.isLocked;
+          this.thread.updatedAt =
+            updatedThread.updatedAt || new Date().toISOString();
+        }
+        this.isEditingThread = false;
+        this.submittingThreadEdit = false;
+      },
+      error: (error) => {
+        console.error("Error updating thread:", error);
+        this.submittingThreadEdit = false;
+      },
+    });
+  }
+
+  confirmDeleteThread() {
+    this.showThreadMenu = false;
+    this.showDeleteThreadModal = true;
+  }
+
+  deleteThread() {
+    if (!this.thread) return;
+
+    this.deletingThread = true;
+    this.threadService.deleteThread(this.thread.id).subscribe({
+      next: () => {
+        this.deletingThread = false;
+        this.showDeleteThreadModal = false;
+        this.router.navigate(["/"]);
+      },
+      error: (error) => {
+        console.error("Error deleting thread:", error);
+        this.deletingThread = false;
       },
     });
   }

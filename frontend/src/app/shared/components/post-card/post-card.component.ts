@@ -12,7 +12,48 @@ import { AuthService } from "../../../core/services/auth.service";
 @Component({
   selector: "app-post-card",
   template: `
-    <div class="comment-thread">
+    <!-- Edit Box - Replaces entire comment-thread when editing -->
+    <div *ngIf="isEditingPost" class="reply-box">
+      <div class="reply-box-header">
+        <img
+          [src]="currentUser?.avatar || 'assets/default-avatar.svg'"
+          [alt]="currentUser?.username || 'User'"
+          class="avatar avatar-sm"
+        />
+        <span class="reply-label">Replying to {{ post.author.username }}</span>
+        <button class="editor-close-btn" (click)="cancelEditingPost()">
+          <i-lucide name="x" [size]="16"></i-lucide>
+        </button>
+      </div>
+      <textarea
+        [(ngModel)]="editPostContent"
+        placeholder="What are your thoughts?"
+        class="reply-textarea"
+        rows="4"
+      ></textarea>
+      <div class="reply-box-footer">
+        <button class="btn btn-sm btn-outline" (click)="cancelEditingPost()">
+          Cancel
+        </button>
+        <button
+          class="btn btn-sm btn-primary"
+          (click)="savePostEdit()"
+          [disabled]="!editPostContent.trim() || submittingPostEdit"
+        >
+          <i-lucide
+            name="loader-2"
+            [size]="14"
+            *ngIf="submittingPostEdit"
+            class="spinner"
+          ></i-lucide>
+          <span *ngIf="!submittingPostEdit">Save</span>
+          <span *ngIf="submittingPostEdit">Saving...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- View Mode -->
+    <div *ngIf="!isEditingPost" class="comment-thread">
       <div class="comment-left">
         <img
           [src]="post.author.avatar || 'assets/default-avatar.svg'"
@@ -26,6 +67,30 @@ import { AuthService } from "../../../core/services/auth.service";
           <span class="author-badge" *ngIf="isOriginalAuthor">Author</span>
           <span class="dot">•</span>
           <span class="post-time">{{ post.createdAt | timeAgo }}</span>
+          <span class="dot">•</span>
+          <span
+            class="edited-indicator"
+            *ngIf="post.updatedAt && post.updatedAt !== post.createdAt"
+            >edited</span
+          >
+          <div class="post-actions-menu" *ngIf="canEditOrDeletePost()">
+            <button class="menu-btn" (click)="togglePostMenu($event)">
+              <i-lucide name="more-vertical" [size]="16"></i-lucide>
+            </button>
+            <div class="dropdown-menu" *ngIf="showPostMenu">
+              <button class="dropdown-item" (click)="startEditingPost()">
+                <i-lucide name="edit-3" [size]="14"></i-lucide>
+                Edit
+              </button>
+              <button
+                class="dropdown-item delete"
+                (click)="confirmDeletePost()"
+              >
+                <i-lucide name="trash" [size]="14"></i-lucide>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
         <div class="comment-content" [innerHTML]="formattedContent"></div>
         <div class="comment-actions">
@@ -132,9 +197,24 @@ import { AuthService } from "../../../core/services/auth.service";
               [threadId]="post.thread?.id || threadId"
               [isThreadLocked]="isThreadLocked"
               (replyAdded)="onNestedReplyAdded()"
+              (postDeleted)="onNestedPostDeleted($event)"
             ></app-post-card>
           </div>
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <app-confirm-modal
+          [isOpen]="showDeletePostModal"
+          [title]="'Delete Comment'"
+          [message]="
+            'Are you sure you want to delete this comment? This action cannot be undone.'
+          "
+          [confirmText]="'Delete'"
+          [loadingText]="'Deleting...'"
+          [isLoading]="deletingPost"
+          (confirm)="deletePost()"
+          (close)="showDeletePostModal = false"
+        ></app-confirm-modal>
       </div>
     </div>
   `,
@@ -166,6 +246,80 @@ import { AuthService } from "../../../core/services/auth.service";
         gap: 6px;
         margin-bottom: 6px;
         font-size: 0.75rem;
+        position: relative;
+      }
+
+      .post-actions-menu {
+        margin-left: auto;
+        position: relative;
+      }
+
+      .menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        color: var(--text-secondary);
+      }
+
+      .menu-btn:hover {
+        background: var(--gray-100);
+        color: var(--text-primary);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        background: var(--bg-primary);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        min-width: 130px;
+        z-index: 100;
+        animation: fadeIn 0.15s ease-out;
+      }
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        width: 100%;
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        color: var(--text-dark);
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        text-align: left;
+      }
+
+      .dropdown-item:hover {
+        background: var(--gray-50);
+      }
+
+      .dropdown-item.delete {
+        color: var(--primary);
+      }
+
+      .dropdown-item.delete:hover {
+        background: var(--primary-50);
+      }
+
+      .dropdown-item:first-child {
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+
+      .dropdown-item:last-child {
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
       }
 
       .author-name {
@@ -190,6 +344,10 @@ import { AuthService } from "../../../core/services/auth.service";
       }
 
       .post-time {
+        color: var(--text-light);
+      }
+
+      .edited-indicator {
         color: var(--text-light);
       }
 
@@ -311,7 +469,7 @@ import { AuthService } from "../../../core/services/auth.service";
         padding: 8px;
         border: 1px solid var(--gray-300);
         border-radius: var(--radius-sm);
-        background: var(--white);
+        background: var(--bg-primary);
         font-size: 0.875rem;
         line-height: 1.5;
         color: var(--text-dark);
@@ -376,6 +534,7 @@ export class PostCardComponent implements OnInit {
   @Input() threadId?: string;
   @Input() isThreadLocked: boolean = false;
   @Output() replyAdded = new EventEmitter<void>();
+  @Output() postDeleted = new EventEmitter<string>();
 
   showReplies: boolean = false;
   loadingReplies: boolean = false;
@@ -385,6 +544,12 @@ export class PostCardComponent implements OnInit {
   showReplyBox: boolean = false;
   replyContent: string = "";
   submittingReply: boolean = false;
+  showPostMenu: boolean = false;
+  showDeletePostModal: boolean = false;
+  deletingPost: boolean = false;
+  isEditingPost: boolean = false;
+  editPostContent: string = "";
+  submittingPostEdit: boolean = false;
 
   constructor(
     private postService: PostService,
@@ -399,6 +564,11 @@ export class PostCardComponent implements OnInit {
       if (user) {
         this.loadUserReaction();
       }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", () => {
+      this.showPostMenu = false;
     });
   }
 
@@ -488,6 +658,10 @@ export class PostCardComponent implements OnInit {
     }
     if (this.isThreadLocked) {
       return;
+    }
+    // Close edit mode if opening reply box
+    if (!this.showReplyBox) {
+      this.isEditingPost = false;
     }
     this.showReplyBox = !this.showReplyBox;
     if (!this.showReplyBox) {
@@ -622,6 +796,15 @@ export class PostCardComponent implements OnInit {
     this.replyAdded.emit();
   }
 
+  onNestedPostDeleted(postId: string) {
+    // Remove the deleted post from the replies array
+    if (this.post.replies) {
+      this.post.replies = this.post.replies.filter((r) => r.id !== postId);
+      this.post.replyCount = Math.max(0, (this.post.replyCount || 0) - 1);
+      this.replyAdded.emit(); // Notify parent about the change
+    }
+  }
+
   get formattedContent(): string {
     return newlineToBr(this.post.content || "");
   }
@@ -658,5 +841,75 @@ export class PostCardComponent implements OnInit {
 
   toggleReplies() {
     this.showReplies = !this.showReplies;
+  }
+
+  canEditOrDeletePost(): boolean {
+    return (
+      this.currentUser &&
+      this.post &&
+      this.currentUser.id === this.post.author.id
+    );
+  }
+
+  togglePostMenu(event: Event) {
+    event.stopPropagation();
+    this.showPostMenu = !this.showPostMenu;
+  }
+
+  startEditingPost() {
+    this.editPostContent = this.post.content;
+    this.isEditingPost = true;
+    this.showPostMenu = false;
+    // Close reply box if opening edit mode
+    this.showReplyBox = false;
+  }
+
+  cancelEditingPost() {
+    this.isEditingPost = false;
+    this.editPostContent = "";
+  }
+
+  savePostEdit() {
+    if (!this.editPostContent.trim()) {
+      return;
+    }
+
+    this.submittingPostEdit = true;
+    this.postService
+      .updatePost(this.post.id, { content: this.editPostContent })
+      .subscribe({
+        next: (updatedPost) => {
+          this.post.content = updatedPost.content;
+          this.post.updatedAt =
+            updatedPost.updatedAt || new Date().toISOString();
+          this.isEditingPost = false;
+          this.submittingPostEdit = false;
+        },
+        error: (error) => {
+          console.error("Error updating post:", error);
+          this.submittingPostEdit = false;
+        },
+      });
+  }
+
+  confirmDeletePost() {
+    this.showPostMenu = false;
+    this.showDeletePostModal = true;
+  }
+
+  deletePost() {
+    this.deletingPost = true;
+    this.postService.deletePost(this.post.id).subscribe({
+      next: () => {
+        this.deletingPost = false;
+        this.showDeletePostModal = false;
+        // Emit event to parent to remove this post from the list
+        this.postDeleted.emit(this.post.id);
+      },
+      error: (error) => {
+        console.error("Error deleting post:", error);
+        this.deletingPost = false;
+      },
+    });
   }
 }

@@ -42,12 +42,15 @@ import {
   Flame,
   ImagePlus,
   Share,
+  Trash,
   Bookmark,
   BookmarkCheck,
   CornerDownRight,
   Clock,
   X,
   Loader2,
+  MoreVertical,
+  Edit3,
 } from "lucide-angular";
 
 import { AppRoutingModule } from "./app-routing.module";
@@ -77,6 +80,7 @@ import { PostCardComponent } from "./shared/components/post-card/post-card.compo
 import { UserCardComponent } from "./shared/components/user-card/user-card.component";
 import { CategoryBadgeComponent } from "./shared/components/category-badge/category-badge.component";
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
+import { ConfirmModalComponent } from "./shared/components/confirm-modal/confirm-modal.component";
 
 // Pipes
 import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
@@ -102,6 +106,7 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
     UserCardComponent,
     CategoryBadgeComponent,
     LoadingSpinnerComponent,
+    ConfirmModalComponent,
     TimeAgoPipe,
     CompactNumberPipe,
   ],
@@ -151,11 +156,14 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
       ImagePlus,
       Share,
       Bookmark,
+      Trash,
       BookmarkCheck,
       CornerDownRight,
       Clock,
       X,
       Loader2,
+      MoreVertical,
+      Edit3,
     }),
   ],
   providers: [

@@ -22,7 +22,7 @@
 }
 
 .error {
-  color: var(--danger);
+  color: var(--primary);
   font-size: 0.875rem;
   margin-top: var(--spacing-xs);
 }
