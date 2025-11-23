@@ -498,6 +498,10 @@ export class PostCardComponent implements OnInit {
   submitReply() {
     if (!this.replyContent.trim()) return;
 
+    if (this.submittingReply) {
+      return; // Prevent double submission
+    }
+
     if (this.isThreadLocked) {
       return;
     }
@@ -533,7 +537,17 @@ export class PostCardComponent implements OnInit {
                 replies: [],
                 author: this.currentUser,
               };
-              this.post.replies = [newReply, ...loadedReplies];
+              // Check if the new reply is already in the loaded replies (prevent duplicates)
+              const replyExistsInLoaded = loadedReplies.some(
+                (r: Post) => r.id === newPost.id
+              );
+              if (replyExistsInLoaded) {
+                // If it's already in loaded replies, just use the loaded ones
+                this.post.replies = loadedReplies;
+              } else {
+                // Otherwise, add the new reply at the beginning
+                this.post.replies = [newReply, ...loadedReplies];
+              }
               this.repliesLoadedFromServer = true;
               this.post.replyCount = (this.post.replyCount || 0) + 1;
               this.replyContent = "";
@@ -548,11 +562,19 @@ export class PostCardComponent implements OnInit {
               if (!this.post.replies) {
                 this.post.replies = [];
               }
-              this.post.replies.unshift({
+              const newReply = {
                 ...newPost,
                 replies: [],
                 author: this.currentUser,
-              });
+              };
+              // Check if reply doesn't already exist (prevent duplicates)
+              const replyExists = this.post.replies.some(
+                (r: Post) => r.id === newPost.id
+              );
+              if (!replyExists) {
+                this.post.replies.unshift(newReply);
+              }
+              this.repliesLoadedFromServer = true;
               this.post.replyCount = (this.post.replyCount || 0) + 1;
               this.replyContent = "";
               this.showReplyBox = false;
@@ -567,11 +589,19 @@ export class PostCardComponent implements OnInit {
             this.post.replies = [];
           }
           // Add the new reply with the current user as author
-          this.post.replies.unshift({
+          const newReply = {
             ...newPost,
             replies: [],
             author: this.currentUser,
-          });
+          };
+          // Check if reply doesn't already exist (prevent duplicates)
+          const replyExists = this.post.replies.some(
+            (r: Post) => r.id === newPost.id
+          );
+          if (!replyExists) {
+            this.post.replies.unshift(newReply);
+          }
+          this.repliesLoadedFromServer = true;
           this.post.replyCount = (this.post.replyCount || 0) + 1;
           this.replyContent = "";
           this.showReplyBox = false;
