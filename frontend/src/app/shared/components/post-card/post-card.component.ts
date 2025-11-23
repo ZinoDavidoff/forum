@@ -379,6 +379,7 @@ export class PostCardComponent implements OnInit {
 
   showReplies: boolean = false;
   loadingReplies: boolean = false;
+  repliesLoadedFromServer: boolean = false;
   userReaction: string | null = null;
   currentUser: any = null;
   showReplyBox: boolean = false;
@@ -517,21 +518,67 @@ export class PostCardComponent implements OnInit {
 
     this.postService.createPost(postData).subscribe({
       next: (newPost) => {
-        if (!this.post.replies) {
-          this.post.replies = [];
+        // If replies weren't loaded from the server yet, load them first
+        if (!this.repliesLoadedFromServer && this.post.replyCount > 0) {
+          // Load existing replies from server, then add the new one
+          this.postService.getReplies(this.post.id).subscribe({
+            next: (response) => {
+              const loadedReplies = response.data.map((reply: Post) => ({
+                ...reply,
+                replies: [],
+              }));
+              // Add the new reply at the beginning
+              const newReply = {
+                ...newPost,
+                replies: [],
+                author: this.currentUser,
+              };
+              this.post.replies = [newReply, ...loadedReplies];
+              this.repliesLoadedFromServer = true;
+              this.post.replyCount = (this.post.replyCount || 0) + 1;
+              this.replyContent = "";
+              this.showReplyBox = false;
+              this.showReplies = true;
+              this.submittingReply = false;
+              this.replyAdded.emit();
+            },
+            error: (error) => {
+              console.error("Error loading existing replies:", error);
+              // Still add the new reply even if loading fails
+              if (!this.post.replies) {
+                this.post.replies = [];
+              }
+              this.post.replies.unshift({
+                ...newPost,
+                replies: [],
+                author: this.currentUser,
+              });
+              this.post.replyCount = (this.post.replyCount || 0) + 1;
+              this.replyContent = "";
+              this.showReplyBox = false;
+              this.showReplies = true;
+              this.submittingReply = false;
+              this.replyAdded.emit();
+            },
+          });
+        } else {
+          // Replies were already loaded, or this is the first reply
+          if (!this.post.replies) {
+            this.post.replies = [];
+          }
+          // Add the new reply with the current user as author
+          this.post.replies.unshift({
+            ...newPost,
+            replies: [],
+            author: this.currentUser,
+          });
+          this.post.replyCount = (this.post.replyCount || 0) + 1;
+          this.replyContent = "";
+          this.showReplyBox = false;
+          this.showReplies = true;
+          this.submittingReply = false;
+          this.replyAdded.emit();
         }
-        // Add the new reply with the current user as author
-        this.post.replies.unshift({
-          ...newPost,
-          replies: [],
-          author: this.currentUser,
-        });
-        this.post.replyCount = (this.post.replyCount || 0) + 1;
-        this.replyContent = "";
-        this.showReplyBox = false;
-        this.showReplies = true;
-        this.submittingReply = false;
-        this.replyAdded.emit();
       },
       error: (error) => {
         console.error("Error creating reply:", error);
@@ -556,7 +603,7 @@ export class PostCardComponent implements OnInit {
   }
 
   loadAndShowReplies() {
-    if (this.post.replies && this.post.replies.length > 0) {
+    if (this.repliesLoadedFromServer) {
       this.showReplies = true;
       return;
     }
@@ -568,6 +615,7 @@ export class PostCardComponent implements OnInit {
           ...reply,
           replies: [],
         }));
+        this.repliesLoadedFromServer = true;
         this.showReplies = true;
         this.loadingReplies = false;
       },
