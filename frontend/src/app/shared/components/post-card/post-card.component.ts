@@ -125,6 +125,7 @@ import { AuthService } from "../../../core/services/auth.service";
               [post]="reply"
               [isNested]="true"
               [originalAuthorId]="originalAuthorId"
+              [threadId]="post.thread?.id || threadId"
               (replyAdded)="onNestedReplyAdded()"
             ></app-post-card>
           </div>
@@ -362,6 +363,7 @@ export class PostCardComponent implements OnInit {
   @Input() post!: Post;
   @Input() isNested: boolean = false;
   @Input() originalAuthorId?: string;
+  @Input() threadId?: string;
   @Output() replyAdded = new EventEmitter<void>();
 
   showReplies: boolean = false;
@@ -479,12 +481,19 @@ export class PostCardComponent implements OnInit {
   }
 
   submitReply() {
-    if (!this.replyContent.trim() || !this.post.thread) return;
+    if (!this.replyContent.trim()) return;
+
+    // Get threadId from post.thread or from input (for nested replies)
+    const threadId = this.post.thread?.id || this.threadId;
+    if (!threadId) {
+      console.error("No threadId available for reply");
+      return;
+    }
 
     this.submittingReply = true;
     const postData = {
       content: this.replyContent,
-      threadId: this.post.thread.id,
+      threadId: threadId,
       parentPostId: this.post.id,
     };
 
@@ -493,7 +502,12 @@ export class PostCardComponent implements OnInit {
         if (!this.post.replies) {
           this.post.replies = [];
         }
-        this.post.replies.unshift({ ...newPost, replies: [] });
+        // Add the new reply with the current user as author
+        this.post.replies.unshift({
+          ...newPost,
+          replies: [],
+          author: this.currentUser,
+        });
         this.post.replyCount = (this.post.replyCount || 0) + 1;
         this.replyContent = "";
         this.showReplyBox = false;

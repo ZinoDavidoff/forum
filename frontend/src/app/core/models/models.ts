@@ -65,7 +65,7 @@ export interface Post {
   isDeleted: boolean;
   attachments?: string[];
   author: User;
-  thread: Thread;
+  thread?: Thread;
   parentPost?: Post;
   replies?: Post[];
   depth?: number; // For nested comment display

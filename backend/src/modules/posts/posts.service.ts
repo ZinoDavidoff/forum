@@ -44,22 +44,57 @@ export class PostsService {
         break;
     }
 
-    // Get only root posts (posts with no parent) for this thread
-    const [rootPosts, total] = await this.postsRepository.findAndCount({
+    // Get all posts for this thread first
+    const allPosts = await this.postsRepository.find({
       where: {
         thread: { id: threadId },
-        parentPost: null,
         isDeleted: false,
       },
-      order,
       relations: ["author", "reactions"],
-      skip: (page - 1) * limit,
-      take: limit,
     });
+
+    // Filter to get only root posts (using TypeORM's tree methods)
+    const rootPosts = [];
+    for (const post of allPosts) {
+      // Check if this post has a parent by finding its ancestors
+      const ancestors = await this.postsRepository.findAncestors(post);
+      // If ancestors only contains the post itself, it's a root post
+      if (ancestors.length === 1) {
+        rootPosts.push(post);
+      }
+    }
+
+    // Apply sorting
+    rootPosts.sort((a, b) => {
+      if (sort === "new") {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      } else if (sort === "top") {
+        if (b.upvoteCount !== a.upvoteCount) {
+          return b.upvoteCount - a.upvoteCount;
+        }
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      } else {
+        // best
+        if (b.upvoteCount !== a.upvoteCount) {
+          return b.upvoteCount - a.upvoteCount;
+        }
+        if (a.downvoteCount !== b.downvoteCount) {
+          return a.downvoteCount - b.downvoteCount;
+        }
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      }
+    });
+
+    // Apply pagination
+    const total = rootPosts.length;
+    const paginatedRootPosts = rootPosts.slice(
+      (page - 1) * limit,
+      page * limit
+    );
 
     // Add reply count to each post (count all descendants recursively)
     const postsWithReplyCount = await Promise.all(
-      rootPosts.map(async (post) => {
+      paginatedRootPosts.map(async (post) => {
         const replyCount = await this.countAllReplies(post.id);
         return {
           ...post,
@@ -147,16 +182,30 @@ export class PostsService {
   }
 
   async create(createPostDto: CreatePostDto, userId: string) {
+    // For Tree entities, we need to load the parent post if it exists
+    let parentPost = null;
+    if (createPostDto.parentPostId) {
+      parentPost = await this.postsRepository.findOne({
+        where: { id: createPostDto.parentPostId },
+      });
+    }
+
     const post = this.postsRepository.create({
-      ...createPostDto,
+      content: createPostDto.content,
+      attachments: createPostDto.attachments,
       author: { id: userId } as any,
       thread: { id: createPostDto.threadId } as any,
-      parentPost: createPostDto.parentPostId
-        ? ({ id: createPostDto.parentPostId } as any)
-        : null,
+      parentPost: parentPost,
     });
 
     const savedPost = await this.postsRepository.save(post);
+
+    // Verify the post was saved correctly by re-querying it
+    const verifyPost = await this.postsRepository
+      .createQueryBuilder("post")
+      .leftJoinAndSelect("post.parentPost", "parentPost")
+      .where("post.id = :id", { id: savedPost.id })
+      .getOne();
 
     await this.usersService.incrementPostCount(userId);
     await this.threadsService.incrementReplyCount(createPostDto.threadId);

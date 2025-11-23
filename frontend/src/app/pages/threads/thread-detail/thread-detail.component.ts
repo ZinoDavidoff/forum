@@ -224,6 +224,7 @@ import { AuthService } from "../../../core/services/auth.service";
                   *ngFor="let post of posts"
                   [post]="post"
                   [originalAuthorId]="thread ? thread.author.id : undefined"
+                  [threadId]="thread.id"
                   (replyAdded)="onReplyAdded()"
                 ></app-post-card>
 
@@ -925,7 +926,11 @@ export class ThreadDetailComponent implements OnInit {
 
     this.postService.createPost(postData).subscribe({
       next: (newPost) => {
-        this.posts = [{ ...newPost, replies: [] }, ...this.posts];
+        // Add new post with current user as author
+        this.posts = [
+          { ...newPost, replies: [], author: this.currentUser },
+          ...this.posts,
+        ];
         this.totalPosts++;
         if (this.thread) {
           this.thread.replyCount++;
@@ -942,15 +947,21 @@ export class ThreadDetailComponent implements OnInit {
   }
 
   onReplyAdded() {
-    // Reload posts to show new reply
+    // This is called when a nested reply is added to any post in the thread
+    // We only increment the thread's total reply count
     if (this.thread) {
       this.thread.replyCount++;
-      this.totalPosts++;
     }
+    // Note: We do NOT increment totalPosts here because:
+    // - totalPosts tracks only top-level posts (for pagination)
+    // - totalPosts is only incremented in submitReply() when adding a top-level post
+    // - thread.replyCount tracks ALL comments (top-level + nested)
   }
 
   getTotalCommentCount(): number {
-    return this.totalPosts || this.posts.length;
+    // Return total count of ALL comments (including nested replies)
+    // thread.replyCount includes all nested replies
+    return this.thread?.replyCount || 0;
   }
 
   get hasMorePosts(): boolean {
