@@ -452,7 +452,7 @@ import { AuthService } from "../../../core/services/auth.service";
               <h3>Thread Stats</h3>
               <div class="stat-item">
                 <i-lucide name="message-square" [size]="18"></i-lucide>
-                <span>{{ getTotalCommentCount() }} Comments</span>
+                <span>{{ thread?.replyCount || 0 }} Comments</span>
               </div>
               <div class="stat-item">
                 <i-lucide name="eye" [size]="18"></i-lucide>
@@ -1433,11 +1433,16 @@ export class ThreadDetailComponent implements OnInit {
     // - thread.replyCount tracks ALL comments (top-level + nested)
   }
 
-  onPostDeleted(postId: string) {
+  onPostDeleted(event: {
+    postId: string;
+    deletedCount: number;
+    newReplyCount: number;
+  }) {
     // Remove the deleted post from the posts array
-    this.posts = this.posts.filter((p) => p.id !== postId);
+    this.posts = this.posts.filter((p) => p.id !== event.postId);
     if (this.thread) {
-      this.thread.replyCount = Math.max(0, this.thread.replyCount - 1);
+      // Use the new reply count from the backend for accuracy
+      this.thread.replyCount = event.newReplyCount;
     }
     this.totalPosts = Math.max(0, this.totalPosts - 1);
   }

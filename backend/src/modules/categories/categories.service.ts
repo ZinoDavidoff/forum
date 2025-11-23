@@ -55,8 +55,24 @@ export class CategoriesService {
     );
   }
 
+  async decrementThreadCount(categoryId: string) {
+    await this.categoriesRepository.decrement(
+      { id: categoryId },
+      "threadCount",
+      1
+    );
+  }
+
   async incrementPostCount(categoryId: string) {
     await this.categoriesRepository.increment(
+      { id: categoryId },
+      "postCount",
+      1
+    );
+  }
+
+  async decrementPostCount(categoryId: string) {
+    await this.categoriesRepository.decrement(
       { id: categoryId },
       "postCount",
       1

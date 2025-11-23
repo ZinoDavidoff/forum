@@ -81,8 +81,16 @@ export class UsersService {
     await this.usersRepository.increment({ id: userId }, "postCount", 1);
   }
 
+  async decrementPostCount(userId: string) {
+    await this.usersRepository.decrement({ id: userId }, "postCount", 1);
+  }
+
   async incrementThreadCount(userId: string) {
     await this.usersRepository.increment({ id: userId }, "threadCount", 1);
+  }
+
+  async decrementThreadCount(userId: string) {
+    await this.usersRepository.decrement({ id: userId }, "threadCount", 1);
   }
 
   async updateReputation(userId: string, points: number) {

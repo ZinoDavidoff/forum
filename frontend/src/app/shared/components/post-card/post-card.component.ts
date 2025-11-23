@@ -534,7 +534,11 @@ export class PostCardComponent implements OnInit {
   @Input() threadId?: string;
   @Input() isThreadLocked: boolean = false;
   @Output() replyAdded = new EventEmitter<void>();
-  @Output() postDeleted = new EventEmitter<string>();
+  @Output() postDeleted = new EventEmitter<{
+    postId: string;
+    deletedCount: number;
+    newReplyCount: number;
+  }>();
 
   showReplies: boolean = false;
   loadingReplies: boolean = false;
@@ -796,12 +800,23 @@ export class PostCardComponent implements OnInit {
     this.replyAdded.emit();
   }
 
-  onNestedPostDeleted(postId: string) {
+  onNestedPostDeleted(event: {
+    postId: string;
+    deletedCount: number;
+    newReplyCount: number;
+  }) {
     // Remove the deleted post from the replies array
     if (this.post.replies) {
-      this.post.replies = this.post.replies.filter((r) => r.id !== postId);
-      this.post.replyCount = Math.max(0, (this.post.replyCount || 0) - 1);
-      this.replyAdded.emit(); // Notify parent about the change
+      this.post.replies = this.post.replies.filter(
+        (r) => r.id !== event.postId
+      );
+      // Decrement parent's reply count by the number of posts deleted
+      this.post.replyCount = Math.max(
+        0,
+        (this.post.replyCount || 0) - event.deletedCount
+      );
+      // Propagate the event upward to update the thread's total count
+      this.postDeleted.emit(event);
     }
   }
 
@@ -900,11 +915,15 @@ export class PostCardComponent implements OnInit {
   deletePost() {
     this.deletingPost = true;
     this.postService.deletePost(this.post.id).subscribe({
-      next: () => {
+      next: (response: any) => {
         this.deletingPost = false;
         this.showDeletePostModal = false;
-        // Emit event to parent to remove this post from the list
-        this.postDeleted.emit(this.post.id);
+        // Emit event to parent with deletion info
+        this.postDeleted.emit({
+          postId: this.post.id,
+          deletedCount: response.deletedCount || 1,
+          newReplyCount: response.newReplyCount || 0,
+        });
       },
       error: (error) => {
         console.error("Error deleting post:", error);

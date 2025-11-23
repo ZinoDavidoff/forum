@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { TreeRepository } from "typeorm";
+import { TreeRepository, Repository, In } from "typeorm";
 import { Post } from "./post.entity";
+import { Reaction } from "../reactions/reaction.entity";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { UpdatePostDto } from "./dto/update-post.dto";
 import { ThreadsService } from "../threads/threads.service";
@@ -12,6 +13,8 @@ export class PostsService {
   constructor(
     @InjectRepository(Post)
     private postsRepository: TreeRepository<Post>,
+    @InjectRepository(Reaction)
+    private reactionsRepository: Repository<Reaction>,
     private threadsService: ThreadsService,
     private usersService: UsersService
   ) {}
@@ -234,9 +237,67 @@ export class PostsService {
       throw new NotFoundException("Not authorized");
     }
 
-    post.isDeleted = true;
-    await this.postsRepository.save(post);
+    // Get all descendants (replies and nested replies) - this includes the post itself
+    const descendants = await this.postsRepository.findDescendants(post);
 
-    return { message: "Post deleted successfully" };
+    // Load full descendant data with authors to update user counts
+    const descendantIds = descendants.map((d) => d.id);
+    const descendantsWithAuthors = await this.postsRepository.find({
+      where: { id: In(descendantIds) },
+      relations: ["author"],
+    });
+
+    // Count posts per user to update their post counts correctly (only non-deleted posts)
+    const userPostCounts = new Map<string, number>();
+    for (const descendant of descendantsWithAuthors) {
+      // Only count if not already deleted
+      if (!descendant.isDeleted) {
+        const authorId = descendant.author.id;
+        userPostCounts.set(authorId, (userPostCounts.get(authorId) || 0) + 1);
+      }
+    }
+
+    // Delete all reactions for this post and all its descendants
+    for (const descendant of descendants) {
+      await this.reactionsRepository.delete({ post: { id: descendant.id } });
+    }
+
+    // Mark all descendants as deleted (soft delete)
+    for (const descendant of descendantsWithAuthors) {
+      if (!descendant.isDeleted) {
+        descendant.isDeleted = true;
+        await this.postsRepository.save(descendant);
+      }
+    }
+
+    // Update thread reply count and get the new count
+    let newReplyCount = 0;
+    if (post.thread) {
+      newReplyCount = await this.threadsService.recalculateReplyCount(
+        post.thread.id
+      );
+    }
+
+    // Update post counts for all affected users
+    for (const [authorId, count] of userPostCounts.entries()) {
+      for (let i = 0; i < count; i++) {
+        await this.usersService.decrementPostCount(authorId);
+      }
+    }
+
+    // Calculate total posts deleted
+    const totalDeleted =
+      userPostCounts.size > 0
+        ? Array.from(userPostCounts.values()).reduce(
+            (sum, count) => sum + count,
+            0
+          )
+        : 0;
+
+    return {
+      message: "Post deleted successfully",
+      deletedCount: totalDeleted,
+      newReplyCount: newReplyCount,
+    };
   }
 }
