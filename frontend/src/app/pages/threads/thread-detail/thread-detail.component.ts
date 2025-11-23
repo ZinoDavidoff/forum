@@ -220,7 +220,7 @@ import { AuthService } from "../../../core/services/auth.service";
                       <span class="time-ago">{{
                         thread.createdAt | timeAgo
                       }}</span>
-                      <span class="dot">•</span>
+                      <span class="dot" *ngIf="thread.updatedAt && thread.updatedAt !== thread.createdAt">•</span>
                       <span
                         class="edited-indicator"
                         *ngIf="

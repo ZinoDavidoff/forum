@@ -67,7 +67,7 @@ import { AuthService } from "../../../core/services/auth.service";
           <span class="author-badge" *ngIf="isOriginalAuthor">Author</span>
           <span class="dot">•</span>
           <span class="post-time">{{ post.createdAt | timeAgo }}</span>
-          <span class="dot">•</span>
+          <span class="dot" *ngIf="post.updatedAt && post.updatedAt !== post.createdAt">•</span>
           <span
             class="edited-indicator"
             *ngIf="post.updatedAt && post.updatedAt !== post.createdAt"
