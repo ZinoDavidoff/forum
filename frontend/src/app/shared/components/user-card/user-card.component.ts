@@ -5,7 +5,7 @@ import { User } from '../../../core/models/models';
   selector: 'app-user-card',
   template: `
     <div class="user-card card">
-      <img [src]="user.avatar || 'assets/default-avatar.png'" [alt]="user.username" class="avatar avatar-lg">
+      <img [src]="user.avatar || 'assets/default-avatar.svg'" [alt]="user.username" class="avatar avatar-lg">
       <h3>{{ user.username }}</h3>
       <p *ngIf="user.bio">{{ user.bio }}</p>
       <div class="user-stats">

@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { PostService } from "../../../core/services/post.service";
 import { Thread, Post, Category } from "../../../core/models/models";
 import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
@@ -7,6 +7,12 @@ import {
   newlineToBr,
   stripHtml,
 } from "../../../shared/utils/text-formatter.util";
+import {
+  ReactionService,
+  ReactionType,
+} from "../../../core/services/reaction.service";
+import { BookmarkService } from "../../../core/services/bookmark.service";
+import { AuthService } from "../../../core/services/auth.service";
 
 @Component({
   selector: "app-thread-detail",
@@ -61,7 +67,7 @@ import {
               <div class="card thread-post">
                 <div class="thread-meta">
                   <img
-                    [src]="thread.author.avatar || 'assets/default-avatar.png'"
+                    [src]="thread.author.avatar || 'assets/default-avatar.svg'"
                     [alt]="thread.author.username"
                     class="avatar"
                   />
@@ -89,26 +95,99 @@ import {
                 </div>
 
                 <div class="thread-actions">
-                  <button class="action-btn upvote-btn">
+                  <button
+                    class="action-btn upvote-btn"
+                    [class.active]="userReaction === 'upvote'"
+                    (click)="handleUpvote()"
+                  >
                     <i-lucide name="chevron-up" [size]="18"></i-lucide>
                     {{ thread.upvoteCount || 0 }}
                   </button>
-                  <button class="action-btn downvote-btn">
+                  <button
+                    class="action-btn downvote-btn"
+                    [class.active]="userReaction === 'downvote'"
+                    (click)="handleDownvote()"
+                  >
                     <i-lucide name="chevron-down" [size]="18"></i-lucide>
                     {{ thread.downvoteCount || 0 }}
                   </button>
-                  <button class="action-btn">
+                  <button class="action-btn" (click)="toggleReplyBox()">
                     <i-lucide name="message-circle" [size]="18"></i-lucide>
                     Reply
                   </button>
-                  <button class="action-btn">
+                  <button class="action-btn" (click)="handleShare()">
                     <i-lucide name="share" [size]="18"></i-lucide>
                     Share
                   </button>
-                  <button class="action-btn">
-                    <i-lucide name="bookmark" [size]="18"></i-lucide>
-                    Save
+                  <button
+                    class="action-btn"
+                    [class.active]="isBookmarked"
+                    (click)="handleBookmark()"
+                  >
+                    <i-lucide
+                      [name]="isBookmarked ? 'bookmark-check' : 'bookmark'"
+                      [size]="18"
+                    ></i-lucide>
+                    {{ isBookmarked ? "Saved" : "Save" }}
                   </button>
+                </div>
+              </div>
+
+              <!-- Reply Box -->
+              <div *ngIf="showReplyBox" class="card reply-box">
+                <div class="editor-container">
+                  <div class="editor-row">
+                    <img
+                      [src]="currentUser?.avatar || 'assets/default-avatar.svg'"
+                      [alt]="currentUser?.username || 'User'"
+                      class="avatar avatar-sm"
+                    />
+                    <span class="reply-label"
+                      >Reply as {{ currentUser?.username }}</span
+                    >
+                    <button class="editor-close-btn" (click)="toggleReplyBox()">
+                      <i-lucide name="x" [size]="18"></i-lucide>
+                    </button>
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <div class="editor-row">
+                    <textarea
+                      [(ngModel)]="replyContent"
+                      placeholder="What are your thoughts?"
+                      class="editor-content reply-textarea"
+                      rows="6"
+                    ></textarea>
+                  </div>
+
+                  <div class="editor-divider"></div>
+
+                  <div class="editor-footer">
+                    <div></div>
+                    <div class="editor-actions">
+                      <button
+                        class="btn btn-outline btn-sm"
+                        (click)="toggleReplyBox()"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        class="btn btn-primary btn-sm"
+                        (click)="submitReply()"
+                        [disabled]="!replyContent.trim() || submittingReply"
+                      >
+                        <i-lucide
+                          name="loader-2"
+                          [size]="16"
+                          *ngIf="submittingReply"
+                          class="spinner"
+                        ></i-lucide>
+                        <span *ngIf="!submittingReply">Post Reply</span>
+                        <span *ngIf="submittingReply">Posting...</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -145,6 +224,7 @@ import {
                   *ngFor="let post of posts"
                   [post]="post"
                   [originalAuthorId]="thread ? thread.author.id : undefined"
+                  (replyAdded)="onReplyAdded()"
                 ></app-post-card>
 
                 <!-- Load More Button -->
@@ -430,6 +510,21 @@ import {
         background: var(--gray-100);
       }
 
+      .upvote-btn.active {
+        color: var(--primary) !important;
+        background: var(--primary-50);
+      }
+
+      .downvote-btn.active {
+        color: var(--primary) !important;
+        background: var(--primary-50);
+      }
+
+      .action-btn.active {
+        color: var(--primary) !important;
+        background: var(--primary-50);
+      }
+
       .vote-btn {
         gap: 6px;
       }
@@ -453,6 +548,113 @@ import {
         }
         to {
           transform: rotate(360deg);
+        }
+      }
+
+      /* Reply Box Styles */
+      .reply-box {
+        margin-bottom: var(--spacing-md);
+        padding: 0;
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .editor-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .editor-row {
+        padding: var(--spacing-md);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+      }
+
+      .reply-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        flex: 1;
+      }
+
+      .editor-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 0;
+      }
+
+      .editor-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+
+      .editor-close-btn:hover {
+        background: var(--gray-100);
+        color: var(--text-primary);
+      }
+
+      .editor-content {
+        width: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: var(--text-dark);
+        resize: vertical;
+        outline: none;
+        font-family: inherit;
+        min-height: 150px;
+        border-radius: 0;
+      }
+
+      .reply-textarea {
+        min-height: 120px;
+      }
+
+      .editor-content:hover,
+      .editor-content:focus {
+        background: transparent;
+        border: none;
+        outline: none;
+        box-shadow: none;
+      }
+
+      .editor-content::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      .editor-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+      }
+
+      .editor-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
       }
 
@@ -497,13 +699,31 @@ export class ThreadDetailComponent implements OnInit {
   lastPage = 1;
   isContentExpanded = false;
   selectedSort: string = "best";
+  userReaction: string | null = null;
+  isBookmarked: boolean = false;
+  currentUser: any = null;
+  showReplyBox: boolean = false;
+  replyContent: string = "";
+  submittingReply: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
-    private postService: PostService
+    private router: Router,
+    private postService: PostService,
+    private reactionService: ReactionService,
+    private bookmarkService: BookmarkService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      if (user && this.thread) {
+        this.loadUserReaction();
+        this.loadBookmarkStatus();
+      }
+    });
+
     const data = this.route.snapshot.data[
       "threadDetailData"
     ] as ThreadDetailData;
@@ -517,11 +737,215 @@ export class ThreadDetailComponent implements OnInit {
       this.lastPage = data.posts.lastPage;
       this.currentPage = data.posts.page;
       this.categories = data.categories;
-      // Calculate total threads from all categories
       this.totalThreads = this.categories.reduce(
         (sum, cat) => sum + (cat.threadCount || 0),
         0
       );
+
+      if (this.currentUser && this.thread) {
+        this.loadUserReaction();
+        this.loadBookmarkStatus();
+      }
+    }
+  }
+
+  loadUserReaction() {
+    if (!this.thread) return;
+    this.reactionService.getUserThreadReaction(this.thread.id).subscribe({
+      next: (response) => {
+        this.userReaction = response?.type || null;
+      },
+      error: () => {
+        this.userReaction = null;
+      },
+    });
+  }
+
+  loadBookmarkStatus() {
+    if (!this.thread) return;
+    this.bookmarkService.isBookmarked(this.thread.id).subscribe({
+      next: (response) => {
+        this.isBookmarked = response?.isBookmarked || false;
+      },
+      error: () => {
+        this.isBookmarked = false;
+      },
+    });
+  }
+
+  handleUpvote() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+
+    if (!this.thread) return;
+
+    this.reactionService
+      .addThreadReaction(this.thread.id, ReactionType.UPVOTE)
+      .subscribe({
+        next: () => {
+          if (!this.thread) return;
+          if (this.userReaction === "upvote") {
+            this.thread.upvoteCount = Math.max(0, this.thread.upvoteCount - 1);
+            this.userReaction = null;
+          } else {
+            if (this.userReaction === "downvote") {
+              this.thread.downvoteCount = Math.max(
+                0,
+                this.thread.downvoteCount - 1
+              );
+            }
+            this.thread.upvoteCount++;
+            this.userReaction = "upvote";
+          }
+        },
+        error: (error) => {
+          console.error("Error adding upvote:", error);
+        },
+      });
+  }
+
+  handleDownvote() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+
+    if (!this.thread) return;
+
+    this.reactionService
+      .addThreadReaction(this.thread.id, ReactionType.DOWNVOTE)
+      .subscribe({
+        next: () => {
+          if (!this.thread) return;
+          if (this.userReaction === "downvote") {
+            this.thread.downvoteCount = Math.max(
+              0,
+              this.thread.downvoteCount - 1
+            );
+            this.userReaction = null;
+          } else {
+            if (this.userReaction === "upvote") {
+              this.thread.upvoteCount = Math.max(
+                0,
+                this.thread.upvoteCount - 1
+              );
+            }
+            this.thread.downvoteCount++;
+            this.userReaction = "downvote";
+          }
+        },
+        error: (error) => {
+          console.error("Error adding downvote:", error);
+        },
+      });
+  }
+
+  handleBookmark() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+
+    if (!this.thread) return;
+
+    if (this.isBookmarked) {
+      this.bookmarkService.removeBookmark(this.thread.id).subscribe({
+        next: () => {
+          this.isBookmarked = false;
+        },
+        error: (error) => {
+          console.error("Error removing bookmark:", error);
+        },
+      });
+    } else {
+      this.bookmarkService.addBookmark(this.thread.id).subscribe({
+        next: () => {
+          this.isBookmarked = true;
+        },
+        error: (error) => {
+          console.error("Error adding bookmark:", error);
+        },
+      });
+    }
+  }
+
+  handleShare() {
+    if (!this.thread) return;
+    const url = `${window.location.origin}/threads/${this.thread.id}`;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: this.thread.title,
+          text: stripHtml(this.thread.content).substring(0, 100) + "...",
+          url: url,
+        })
+        .catch((error) => {
+          if (error.name !== "AbortError") {
+            this.copyToClipboard(url);
+          }
+        });
+    } else {
+      this.copyToClipboard(url);
+    }
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("Link copied to clipboard!");
+      })
+      .catch((error) => {
+        console.error("Error copying to clipboard:", error);
+      });
+  }
+
+  toggleReplyBox() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+    this.showReplyBox = !this.showReplyBox;
+    if (!this.showReplyBox) {
+      this.replyContent = "";
+    }
+  }
+
+  submitReply() {
+    if (!this.replyContent.trim() || !this.thread) return;
+
+    this.submittingReply = true;
+    const postData = {
+      content: this.replyContent,
+      threadId: this.thread.id,
+    };
+
+    this.postService.createPost(postData).subscribe({
+      next: (newPost) => {
+        this.posts = [{ ...newPost, replies: [] }, ...this.posts];
+        this.totalPosts++;
+        if (this.thread) {
+          this.thread.replyCount++;
+        }
+        this.replyContent = "";
+        this.showReplyBox = false;
+        this.submittingReply = false;
+      },
+      error: (error) => {
+        console.error("Error creating reply:", error);
+        this.submittingReply = false;
+      },
+    });
+  }
+
+  onReplyAdded() {
+    // Reload posts to show new reply
+    if (this.thread) {
+      this.thread.replyCount++;
+      this.totalPosts++;
     }
   }
 
@@ -557,8 +981,6 @@ export class ThreadDetailComponent implements OnInit {
     this.isContentExpanded = !this.isContentExpanded;
   }
 
-  // loadThreadData removed, now handled by resolver
-
   loadMorePosts() {
     if (!this.thread || this.loadingMore || !this.hasMorePosts) {
       return;
@@ -572,7 +994,7 @@ export class ThreadDetailComponent implements OnInit {
         next: (response) => {
           const newPosts = response.data.map((post: Post) => ({
             ...post,
-            replies: [], // Initialize with empty replies for lazy loading
+            replies: [],
           }));
           this.posts = [...this.posts, ...newPosts];
           this.currentPage = response.page;
@@ -591,9 +1013,8 @@ export class ThreadDetailComponent implements OnInit {
     }
     this.selectedSort = sort;
     this.loadingMore = true;
-    this.posts = []; // Clear posts to show loading spinner
+    this.posts = [];
 
-    // Reload posts with new sort order
     this.postService.getPostsByThread(this.thread.id, 1, 20, sort).subscribe({
       next: (response) => {
         this.posts = response.data.map((post: Post) => ({

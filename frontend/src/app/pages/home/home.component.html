@@ -60,7 +60,7 @@
             (click)="expandPostCreator()"
           >
             <img
-              [src]="currentUser?.avatar || 'assets/default-avatar.png'"
+              [src]="currentUser?.avatar || 'assets/default-avatar.svg'"
               alt="avatar"
               class="avatar"
               *ngIf="currentUser"
@@ -274,6 +274,10 @@
               <div class="stat-value">{{ totalThreads | compactNumber }}</div>
               <div class="stat-label">Threads</div>
             </div>
+            <div class="stat">
+              <div class="stat-value">{{ totalTopics | compactNumber }}</div>
+              <div class="stat-label">Topics</div>
+            </div>
           </div>
           <button
             class="btn btn-primary w-100"
@@ -306,7 +310,7 @@
           <div class="moderator-list">
             <div class="moderator-item">
               <img
-                src="assets/default-avatar.png"
+                src="assets/default-avatar.svg"
                 alt="mod"
                 class="avatar avatar-sm"
               />

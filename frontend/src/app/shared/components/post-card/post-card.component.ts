@@ -1,7 +1,13 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { Post } from "../../../core/models/models";
 import { PostService } from "../../../core/services/post.service";
 import { newlineToBr } from "../../utils/text-formatter.util";
+import {
+  ReactionService,
+  ReactionType,
+} from "../../../core/services/reaction.service";
+import { AuthService } from "../../../core/services/auth.service";
 
 @Component({
   selector: "app-post-card",
@@ -9,11 +15,10 @@ import { newlineToBr } from "../../utils/text-formatter.util";
     <div class="comment-thread">
       <div class="comment-left">
         <img
-          [src]="post.author.avatar || 'assets/default-avatar.png'"
+          [src]="post.author.avatar || 'assets/default-avatar.svg'"
           [alt]="post.author.username"
           class="avatar avatar-sm"
         />
-        <div class="thread-line"></div>
       </div>
       <div class="comment-body">
         <div class="comment-header">
@@ -24,18 +29,68 @@ import { newlineToBr } from "../../utils/text-formatter.util";
         </div>
         <div class="comment-content" [innerHTML]="formattedContent"></div>
         <div class="comment-actions">
-          <button class="action-btn upvote-btn">
+          <button
+            class="action-btn upvote-btn"
+            [class.active]="userReaction === 'upvote'"
+            (click)="handleUpvote()"
+          >
             <i-lucide name="chevron-up" [size]="16"></i-lucide>
             {{ post.upvoteCount || 0 }}
           </button>
-          <button class="action-btn downvote-btn">
+          <button
+            class="action-btn downvote-btn"
+            [class.active]="userReaction === 'downvote'"
+            (click)="handleDownvote()"
+          >
             <i-lucide name="chevron-down" [size]="16"></i-lucide>
             {{ post.downvoteCount || 0 }}
           </button>
-          <button class="action-btn">
+          <button class="action-btn" (click)="toggleReplyBox()">
             <i-lucide name="message-circle" [size]="16"></i-lucide>
             Reply
           </button>
+        </div>
+
+        <!-- Reply Box -->
+        <div *ngIf="showReplyBox" class="reply-box">
+          <div class="reply-box-header">
+            <img
+              [src]="currentUser?.avatar || 'assets/default-avatar.svg'"
+              [alt]="currentUser?.username || 'User'"
+              class="avatar avatar-sm"
+            />
+            <span class="reply-label"
+              >Replying to {{ post.author.username }}</span
+            >
+            <button class="editor-close-btn" (click)="toggleReplyBox()">
+              <i-lucide name="x" [size]="16"></i-lucide>
+            </button>
+          </div>
+          <textarea
+            [(ngModel)]="replyContent"
+            placeholder="What are your thoughts?"
+            class="reply-textarea"
+            rows="4"
+          ></textarea>
+          <div class="reply-box-footer">
+            <button class="btn btn-sm btn-outline" (click)="toggleReplyBox()">
+              Cancel
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              (click)="submitReply()"
+              [disabled]="!replyContent.trim() || submittingReply"
+            >
+              <i-lucide
+                name="loader-2"
+                [size]="14"
+                *ngIf="submittingReply"
+                class="spinner"
+              ></i-lucide>
+              <span *ngIf="!submittingReply">Reply</span>
+              <span *ngIf="submittingReply">Posting...</span>
+            </button>
+          </div>
         </div>
 
         <!-- Nested Replies -->
@@ -70,6 +125,7 @@ import { newlineToBr } from "../../utils/text-formatter.util";
               [post]="reply"
               [isNested]="true"
               [originalAuthorId]="originalAuthorId"
+              (replyAdded)="onNestedReplyAdded()"
             ></app-post-card>
           </div>
         </div>
@@ -90,13 +146,6 @@ import { newlineToBr } from "../../utils/text-formatter.util";
         align-items: center;
         width: 24px;
         flex-shrink: 0;
-      }
-
-      .thread-line {
-        width: 2px;
-        background: var(--gray-300);
-        flex: 1;
-        margin-top: 4px;
       }
 
       .comment-body {
@@ -170,15 +219,19 @@ import { newlineToBr } from "../../utils/text-formatter.util";
         background: var(--gray-100);
       }
 
+      .upvote-btn.active {
+        color: var(--primary);
+        background: var(--primary-50);
+      }
+
+      .downvote-btn.active {
+        color: var(--primary);
+        background: var(--primary-50);
+      }
+
       .vote-btn {
         gap: 6px;
       }
-
-      /*
-      .action-btn:first-child {
-        padding: 2px 4px;
-      }
-      */
 
       .nested-replies {
         margin-left: 0;
@@ -197,17 +250,268 @@ import { newlineToBr } from "../../utils/text-formatter.util";
       .collapse-replies-btn:hover {
         background: var(--gray-100);
       }
+
+      /* Reply Box Styles */
+      .reply-box {
+        margin: 8px 0;
+        padding: 12px;
+        background: var(--gray-50);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .reply-box-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .reply-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        flex: 1;
+      }
+
+      .editor-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+
+      .editor-close-btn:hover {
+        background: var(--gray-200);
+        color: var(--text-primary);
+      }
+
+      .reply-textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: var(--text-dark);
+        resize: vertical;
+        outline: none;
+        font-family: inherit;
+        margin-bottom: 8px;
+      }
+
+      .reply-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--bg-primary);
+        box-shadow: 0 0 0 3px var(--primary-100);
+      }
+
+      .reply-textarea::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      .reply-box-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .btn-sm {
+        padding: 4px 12px;
+        font-size: 0.75rem;
+      }
+
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     `,
   ],
 })
-export class PostCardComponent {
+export class PostCardComponent implements OnInit {
   @Input() post!: Post;
   @Input() isNested: boolean = false;
-  @Input() originalAuthorId?: string; // ID of the original thread author
+  @Input() originalAuthorId?: string;
+  @Output() replyAdded = new EventEmitter<void>();
+
   showReplies: boolean = false;
   loadingReplies: boolean = false;
+  userReaction: string | null = null;
+  currentUser: any = null;
+  showReplyBox: boolean = false;
+  replyContent: string = "";
+  submittingReply: boolean = false;
 
-  constructor(private postService: PostService) {}
+  constructor(
+    private postService: PostService,
+    private reactionService: ReactionService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      if (user) {
+        this.loadUserReaction();
+      }
+    });
+  }
+
+  loadUserReaction() {
+    this.reactionService.getUserPostReaction(this.post.id).subscribe({
+      next: (response) => {
+        this.userReaction = response?.type || null;
+      },
+      error: () => {
+        this.userReaction = null;
+      },
+    });
+  }
+
+  handleUpvote() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+
+    this.reactionService
+      .addPostReaction(this.post.id, ReactionType.UPVOTE)
+      .subscribe({
+        next: () => {
+          if (this.userReaction === "upvote") {
+            this.post.upvoteCount = Math.max(0, this.post.upvoteCount - 1);
+            this.userReaction = null;
+          } else {
+            if (this.userReaction === "downvote") {
+              this.post.downvoteCount = Math.max(
+                0,
+                this.post.downvoteCount - 1
+              );
+            }
+            this.post.upvoteCount++;
+            this.userReaction = "upvote";
+          }
+        },
+        error: (error) => {
+          console.error("Error adding upvote:", error);
+        },
+      });
+  }
+
+  handleDownvote() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+
+    this.reactionService
+      .addPostReaction(this.post.id, ReactionType.DOWNVOTE)
+      .subscribe({
+        next: () => {
+          if (this.userReaction === "downvote") {
+            this.post.downvoteCount = Math.max(0, this.post.downvoteCount - 1);
+            this.userReaction = null;
+          } else {
+            if (this.userReaction === "upvote") {
+              this.post.upvoteCount = Math.max(0, this.post.upvoteCount - 1);
+            }
+            this.post.downvoteCount++;
+            this.userReaction = "downvote";
+          }
+        },
+        error: (error) => {
+          console.error("Error adding downvote:", error);
+        },
+      });
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("Link copied to clipboard!");
+      })
+      .catch((error) => {
+        console.error("Error copying to clipboard:", error);
+      });
+  }
+
+  toggleReplyBox() {
+    if (!this.currentUser) {
+      this.router.navigate(["/login"]);
+      return;
+    }
+    this.showReplyBox = !this.showReplyBox;
+    if (!this.showReplyBox) {
+      this.replyContent = "";
+    }
+  }
+
+  submitReply() {
+    if (!this.replyContent.trim() || !this.post.thread) return;
+
+    this.submittingReply = true;
+    const postData = {
+      content: this.replyContent,
+      threadId: this.post.thread.id,
+      parentPostId: this.post.id,
+    };
+
+    this.postService.createPost(postData).subscribe({
+      next: (newPost) => {
+        if (!this.post.replies) {
+          this.post.replies = [];
+        }
+        this.post.replies.unshift({ ...newPost, replies: [] });
+        this.post.replyCount = (this.post.replyCount || 0) + 1;
+        this.replyContent = "";
+        this.showReplyBox = false;
+        this.showReplies = true;
+        this.submittingReply = false;
+        this.replyAdded.emit();
+      },
+      error: (error) => {
+        console.error("Error creating reply:", error);
+        this.submittingReply = false;
+      },
+    });
+  }
+
+  onNestedReplyAdded() {
+    this.post.replyCount = (this.post.replyCount || 0) + 1;
+    this.replyAdded.emit();
+  }
 
   get formattedContent(): string {
     return newlineToBr(this.post.content || "");
@@ -221,18 +525,16 @@ export class PostCardComponent {
 
   loadAndShowReplies() {
     if (this.post.replies && this.post.replies.length > 0) {
-      // Replies already loaded, just toggle visibility
       this.showReplies = true;
       return;
     }
 
-    // Load replies from server
     this.loadingReplies = true;
     this.postService.getReplies(this.post.id).subscribe({
       next: (response) => {
         this.post.replies = response.data.map((reply: Post) => ({
           ...reply,
-          replies: [], // Initialize nested replies as empty for lazy loading
+          replies: [],
         }));
         this.showReplies = true;
         this.loadingReplies = false;

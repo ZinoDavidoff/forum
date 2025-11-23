@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Put,
+  Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -30,6 +32,34 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Get("me/bookmarks")
+  @UseGuards(JwtAuthGuard)
+  getBookmarks(
+    @Request() req,
+    @Query("page") page: number = 1,
+    @Query("limit") limit: number = 20
+  ) {
+    return this.usersService.getBookmarks(req.user.id, page, limit);
+  }
+
+  @Get("me/bookmarks/:threadId")
+  @UseGuards(JwtAuthGuard)
+  isBookmarked(@Request() req, @Param("threadId") threadId: string) {
+    return this.usersService.isBookmarked(req.user.id, threadId);
+  }
+
+  @Post("me/bookmarks/:threadId")
+  @UseGuards(JwtAuthGuard)
+  addBookmark(@Request() req, @Param("threadId") threadId: string) {
+    return this.usersService.addBookmark(req.user.id, threadId);
+  }
+
+  @Delete("me/bookmarks/:threadId")
+  @UseGuards(JwtAuthGuard)
+  removeBookmark(@Request() req, @Param("threadId") threadId: string) {
+    return this.usersService.removeBookmark(req.user.id, threadId);
   }
 
   @Get(":id")

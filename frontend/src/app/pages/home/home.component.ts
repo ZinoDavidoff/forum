@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   currentPage = 1;
   totalThreads = 0;
   totalMembers = 0;
+  totalTopics = 0;
   lastPage = 1;
   selectedCategoryId: string | null = null;
   selectedSort: string = "hot";
@@ -57,6 +58,7 @@ export class HomeComponent implements OnInit {
     this.categories = homeData.categories;
     this.totalMembers = homeData.stats.totalMembers;
     this.totalThreads = homeData.stats.totalThreads;
+    this.totalTopics = homeData.stats.totalTopics;
     this.featuredThreads = homeData.threads.data;
     this.lastPage = homeData.threads.lastPage;
     this.currentPage = homeData.threads.page;

@@ -156,6 +156,10 @@ a:hover {
   color: var(--primary-600);
 }
 
+i-lucide {
+  line-height: 0;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;

@@ -13,7 +13,7 @@ import { Thread, Category } from "../models/models";
 export interface HomeData {
   threads: { data: Thread[]; page: number; lastPage: number };
   categories: Category[];
-  stats: { totalMembers: number; totalThreads: number };
+  stats: { totalMembers: number; totalThreads: number; totalTopics: number };
 }
 
 @Injectable({

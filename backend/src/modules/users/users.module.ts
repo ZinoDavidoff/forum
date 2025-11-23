@@ -4,9 +4,10 @@ import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
 import { User } from "./user.entity";
 import { Thread } from "../threads/thread.entity";
+import { Category } from "../categories/category.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Thread])],
+  imports: [TypeOrmModule.forFeature([User, Thread, Category])],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],
