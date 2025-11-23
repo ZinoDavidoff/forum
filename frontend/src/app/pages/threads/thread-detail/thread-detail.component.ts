@@ -111,7 +111,11 @@ import { AuthService } from "../../../core/services/auth.service";
                     <i-lucide name="chevron-down" [size]="18"></i-lucide>
                     {{ thread.downvoteCount || 0 }}
                   </button>
-                  <button class="action-btn" (click)="toggleReplyBox()">
+                  <button
+                    class="action-btn"
+                    (click)="toggleReplyBox()"
+                    [disabled]="thread.isLocked"
+                  >
                     <i-lucide name="message-circle" [size]="18"></i-lucide>
                     Reply
                   </button>
@@ -192,7 +196,7 @@ import { AuthService } from "../../../core/services/auth.service";
               </div>
 
               <div class="comments-section">
-                <div class="comment-sort card">
+                <div class="comment-sort card" *ngIf="!thread.isLocked">
                   <button
                     class="sort-btn"
                     [class.active]="selectedSort === 'best'"
@@ -225,6 +229,7 @@ import { AuthService } from "../../../core/services/auth.service";
                   [post]="post"
                   [originalAuthorId]="thread ? thread.author.id : undefined"
                   [threadId]="thread.id"
+                  [isThreadLocked]="thread.isLocked"
                   (replyAdded)="onReplyAdded()"
                 ></app-post-card>
 
@@ -507,8 +512,13 @@ import { AuthService } from "../../../core/services/auth.service";
         font-size: 0.75rem;
       }
 
-      .action-btn:hover {
+      .action-btn:hover:not(:disabled) {
         background: var(--gray-100);
+      }
+
+      .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .upvote-btn.active {
@@ -909,6 +919,9 @@ export class ThreadDetailComponent implements OnInit {
       this.router.navigate(["/login"]);
       return;
     }
+    if (this.thread?.isLocked) {
+      return;
+    }
     this.showReplyBox = !this.showReplyBox;
     if (!this.showReplyBox) {
       this.replyContent = "";
@@ -917,6 +930,10 @@ export class ThreadDetailComponent implements OnInit {
 
   submitReply() {
     if (!this.replyContent.trim() || !this.thread) return;
+
+    if (this.thread.isLocked) {
+      return;
+    }
 
     this.submittingReply = true;
     const postData = {

@@ -45,7 +45,11 @@ import { AuthService } from "../../../core/services/auth.service";
             <i-lucide name="chevron-down" [size]="16"></i-lucide>
             {{ post.downvoteCount || 0 }}
           </button>
-          <button class="action-btn" (click)="toggleReplyBox()">
+          <button
+            class="action-btn"
+            (click)="toggleReplyBox()"
+            [disabled]="isThreadLocked"
+          >
             <i-lucide name="message-circle" [size]="16"></i-lucide>
             Reply
           </button>
@@ -126,6 +130,7 @@ import { AuthService } from "../../../core/services/auth.service";
               [isNested]="true"
               [originalAuthorId]="originalAuthorId"
               [threadId]="post.thread?.id || threadId"
+              [isThreadLocked]="isThreadLocked"
               (replyAdded)="onNestedReplyAdded()"
             ></app-post-card>
           </div>
@@ -216,8 +221,13 @@ import { AuthService } from "../../../core/services/auth.service";
         transition: all 0.1s ease;
       }
 
-      .action-btn:hover {
+      .action-btn:hover:not(:disabled) {
         background: var(--gray-100);
+      }
+
+      .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .upvote-btn.active {
@@ -364,6 +374,7 @@ export class PostCardComponent implements OnInit {
   @Input() isNested: boolean = false;
   @Input() originalAuthorId?: string;
   @Input() threadId?: string;
+  @Input() isThreadLocked: boolean = false;
   @Output() replyAdded = new EventEmitter<void>();
 
   showReplies: boolean = false;
@@ -474,6 +485,9 @@ export class PostCardComponent implements OnInit {
       this.router.navigate(["/login"]);
       return;
     }
+    if (this.isThreadLocked) {
+      return;
+    }
     this.showReplyBox = !this.showReplyBox;
     if (!this.showReplyBox) {
       this.replyContent = "";
@@ -482,6 +496,10 @@ export class PostCardComponent implements OnInit {
 
   submitReply() {
     if (!this.replyContent.trim()) return;
+
+    if (this.isThreadLocked) {
+      return;
+    }
 
     // Get threadId from post.thread or from input (for nested replies)
     const threadId = this.post.thread?.id || this.threadId;
