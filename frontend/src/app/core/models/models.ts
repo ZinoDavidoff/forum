@@ -52,6 +52,9 @@ export interface Thread {
   lastPost?: Post;
   createdAt: Date;
   updatedAt: Date;
+  // User-specific fields (only present when user is logged in)
+  userReaction?: "upvote" | "downvote" | null;
+  isBookmarked?: boolean;
 }
 
 export interface Post {
@@ -71,6 +74,8 @@ export interface Post {
   depth?: number; // For nested comment display
   createdAt: Date;
   updatedAt: Date;
+  // User-specific fields (only present when user is logged in)
+  userReaction?: "upvote" | "downvote" | null;
 }
 
 export interface Notification {

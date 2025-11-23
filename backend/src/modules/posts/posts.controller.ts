@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { UpdatePostDto } from "./dto/update-post.dto";
 
@@ -20,18 +21,23 @@ export class PostsController {
   constructor(private postsService: PostsService) {}
 
   @Get("thread/:threadId")
+  @UseGuards(OptionalJwtAuthGuard)
   findByThread(
+    @Request() req,
     @Param("threadId") threadId: string,
     @Query("page") page: number = 1,
     @Query("limit") limit: number = 20,
     @Query("sort") sort: string = "best"
   ) {
-    return this.postsService.findByThread(threadId, page, limit, sort);
+    const userId = req.user?.id;
+    return this.postsService.findByThread(threadId, page, limit, sort, userId);
   }
 
   @Get(":id/replies")
-  findReplies(@Param("id") id: string) {
-    return this.postsService.findReplies(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  findReplies(@Request() req, @Param("id") id: string) {
+    const userId = req.user?.id;
+    return this.postsService.findReplies(id, userId);
   }
 
   @Get(":id")

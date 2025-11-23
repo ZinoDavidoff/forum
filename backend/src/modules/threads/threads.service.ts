@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, ILike } from "typeorm";
+import { Repository, ILike, In } from "typeorm";
 import { Thread } from "./thread.entity";
 import { Post } from "../posts/post.entity";
-import { Reaction } from "../reactions/reaction.entity";
+import { Reaction, TargetType } from "../reactions/reaction.entity";
 import { CreateThreadDto } from "./dto/create-thread.dto";
 import { UpdateThreadDto } from "./dto/update-thread.dto";
 import { UsersService } from "../users/users.service";
@@ -27,7 +27,8 @@ export class ThreadsService {
     limit: number = 20,
     categoryId?: string,
     search?: string,
-    sort: string = "hot"
+    sort: string = "hot",
+    userId?: string
   ) {
     const where: any = {};
 
@@ -67,6 +68,41 @@ export class ThreadsService {
       relations: ["author", "category", "lastPost"],
     });
 
+    // Get user reactions and bookmarks if userId is provided
+    let userReactions = new Map<string, string>();
+    let userBookmarks = new Set<string>();
+
+    if (userId) {
+      const threadIds = threads.map((t) => t.id);
+
+      // Fetch all user reactions for these threads in one query
+      const reactions = await this.reactionsRepository.find({
+        where: {
+          user: { id: userId },
+          thread: { id: In(threadIds) },
+          targetType: TargetType.THREAD,
+        },
+        relations: ["thread"],
+      });
+
+      reactions.forEach((reaction) => {
+        userReactions.set(reaction.thread.id, reaction.type);
+      });
+
+      // Fetch user bookmarks in one query
+      const userWithBookmarks = await this.threadsRepository
+        .createQueryBuilder("thread")
+        .innerJoin("user_bookmarks", "ub", "ub.threadsId = thread.id")
+        .where("ub.usersId = :userId", { userId })
+        .andWhere("thread.id IN (:...threadIds)", { threadIds })
+        .select("thread.id")
+        .getMany();
+
+      userWithBookmarks.forEach((thread) => {
+        userBookmarks.add(thread.id);
+      });
+    }
+
     // Recalculate reply counts for each thread to include nested comments
     const threadsWithCorrectCounts = await Promise.all(
       threads.map(async (thread) => {
@@ -83,7 +119,16 @@ export class ThreadsService {
         }
 
         thread.replyCount = actualReplyCount;
-        return thread;
+
+        // Add user-specific fields
+        const threadWithUserData = thread as any;
+        if (userId) {
+          threadWithUserData.userReaction =
+            userReactions.get(thread.id) || null;
+          threadWithUserData.isBookmarked = userBookmarks.has(thread.id);
+        }
+
+        return threadWithUserData;
       })
     );
 
@@ -95,7 +140,7 @@ export class ThreadsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const thread = await this.threadsRepository.findOne({
       where: { id },
       relations: ["author", "category", "posts", "posts.author"],
@@ -120,10 +165,34 @@ export class ThreadsService {
 
     thread.replyCount = actualReplyCount;
 
+    // Add user-specific fields if userId is provided
+    const threadWithUserData = thread as any;
+    if (userId) {
+      // Get user reaction
+      const reaction = await this.reactionsRepository.findOne({
+        where: {
+          user: { id: userId },
+          thread: { id },
+          targetType: TargetType.THREAD,
+        },
+      });
+      threadWithUserData.userReaction = reaction?.type || null;
+
+      // Check if bookmarked
+      const bookmarked = await this.threadsRepository
+        .createQueryBuilder("thread")
+        .innerJoin("user_bookmarks", "ub", "ub.threadsId = thread.id")
+        .where("ub.usersId = :userId", { userId })
+        .andWhere("thread.id = :id", { id })
+        .getOne();
+
+      threadWithUserData.isBookmarked = !!bookmarked;
+    }
+
     // Increment view count
     await this.threadsRepository.increment({ id }, "viewCount", 1);
 
-    return thread;
+    return threadWithUserData;
   }
 
   async create(createThreadDto: CreateThreadDto, userId: string) {

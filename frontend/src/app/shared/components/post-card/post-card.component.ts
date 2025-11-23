@@ -565,25 +565,16 @@ export class PostCardComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-      if (user) {
-        this.loadUserReaction();
-      }
     });
+
+    // Use data from post if available (provided by backend)
+    if (this.post.userReaction !== undefined) {
+      this.userReaction = this.post.userReaction;
+    }
 
     // Close dropdown when clicking outside
     document.addEventListener("click", () => {
       this.showPostMenu = false;
-    });
-  }
-
-  loadUserReaction() {
-    this.reactionService.getUserPostReaction(this.post.id).subscribe({
-      next: (response) => {
-        this.userReaction = response?.type || null;
-      },
-      error: () => {
-        this.userReaction = null;
-      },
     });
   }
 
@@ -600,6 +591,7 @@ export class PostCardComponent implements OnInit {
           if (this.userReaction === "upvote") {
             this.post.upvoteCount = Math.max(0, this.post.upvoteCount - 1);
             this.userReaction = null;
+            this.post.userReaction = null;
           } else {
             if (this.userReaction === "downvote") {
               this.post.downvoteCount = Math.max(
@@ -609,6 +601,7 @@ export class PostCardComponent implements OnInit {
             }
             this.post.upvoteCount++;
             this.userReaction = "upvote";
+            this.post.userReaction = "upvote";
           }
         },
         error: (error) => {
@@ -630,12 +623,14 @@ export class PostCardComponent implements OnInit {
           if (this.userReaction === "downvote") {
             this.post.downvoteCount = Math.max(0, this.post.downvoteCount - 1);
             this.userReaction = null;
+            this.post.userReaction = null;
           } else {
             if (this.userReaction === "upvote") {
               this.post.upvoteCount = Math.max(0, this.post.upvoteCount - 1);
             }
             this.post.downvoteCount++;
             this.userReaction = "downvote";
+            this.post.userReaction = "downvote";
           }
         },
         error: (error) => {

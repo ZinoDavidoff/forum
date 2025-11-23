@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TreeRepository, Repository, In } from "typeorm";
 import { Post } from "./post.entity";
-import { Reaction } from "../reactions/reaction.entity";
+import { Reaction, TargetType } from "../reactions/reaction.entity";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { UpdatePostDto } from "./dto/update-post.dto";
 import { ThreadsService } from "../threads/threads.service";
@@ -23,7 +23,8 @@ export class PostsService {
     threadId: string,
     page: number = 1,
     limit: number = 20,
-    sort: string = "best"
+    sort: string = "best",
+    userId?: string
   ) {
     // Determine sorting order based on sort parameter
     let order: any = {};
@@ -95,14 +96,40 @@ export class PostsService {
       page * limit
     );
 
+    // Get user reactions if userId is provided
+    let userReactions = new Map<string, string>();
+    if (userId) {
+      const postIds = paginatedRootPosts.map((p) => p.id);
+      if (postIds.length > 0) {
+        const reactions = await this.reactionsRepository.find({
+          where: {
+            user: { id: userId },
+            post: { id: In(postIds) },
+            targetType: TargetType.POST,
+          },
+          relations: ["post"],
+        });
+
+        reactions.forEach((reaction) => {
+          userReactions.set(reaction.post.id, reaction.type);
+        });
+      }
+    }
+
     // Add reply count to each post (count all descendants recursively)
     const postsWithReplyCount = await Promise.all(
       paginatedRootPosts.map(async (post) => {
         const replyCount = await this.countAllReplies(post.id);
-        return {
+        const postWithUserData = {
           ...post,
           replyCount,
-        };
+        } as any;
+
+        if (userId) {
+          postWithUserData.userReaction = userReactions.get(post.id) || null;
+        }
+
+        return postWithUserData;
       })
     );
 
@@ -147,7 +174,7 @@ export class PostsService {
     return post;
   }
 
-  async findReplies(postId: string) {
+  async findReplies(postId: string, userId?: string) {
     // Verify the post exists
     const post = await this.postsRepository.findOne({
       where: { id: postId },
@@ -167,14 +194,40 @@ export class PostsService {
       order: { createdAt: "ASC" },
     });
 
+    // Get user reactions if userId is provided
+    let userReactions = new Map<string, string>();
+    if (userId) {
+      const replyIds = replies.map((r) => r.id);
+      if (replyIds.length > 0) {
+        const reactions = await this.reactionsRepository.find({
+          where: {
+            user: { id: userId },
+            post: { id: In(replyIds) },
+            targetType: TargetType.POST,
+          },
+          relations: ["post"],
+        });
+
+        reactions.forEach((reaction) => {
+          userReactions.set(reaction.post.id, reaction.type);
+        });
+      }
+    }
+
     // Add replyCount to each reply (count all descendants recursively)
     const repliesWithCount = await Promise.all(
       replies.map(async (reply) => {
         const replyCount = await this.countAllReplies(reply.id);
-        return {
+        const replyWithUserData = {
           ...reply,
           replyCount,
-        };
+        } as any;
+
+        if (userId) {
+          replyWithUserData.userReaction = userReactions.get(reply.id) || null;
+        }
+
+        return replyWithUserData;
       })
     );
 

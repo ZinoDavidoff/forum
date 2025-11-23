@@ -193,33 +193,15 @@ export class ThreadCardComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-      if (user) {
-        this.loadUserReaction();
-        this.loadBookmarkStatus();
-      }
     });
-  }
 
-  loadUserReaction() {
-    this.reactionService.getUserThreadReaction(this.thread.id).subscribe({
-      next: (response) => {
-        this.userReaction = response?.type || null;
-      },
-      error: () => {
-        this.userReaction = null;
-      },
-    });
-  }
-
-  loadBookmarkStatus() {
-    this.bookmarkService.isBookmarked(this.thread.id).subscribe({
-      next: (response) => {
-        this.isBookmarked = response?.isBookmarked || false;
-      },
-      error: () => {
-        this.isBookmarked = false;
-      },
-    });
+    // Use data from thread if available (provided by backend)
+    if (this.thread.userReaction !== undefined) {
+      this.userReaction = this.thread.userReaction;
+    }
+    if (this.thread.isBookmarked !== undefined) {
+      this.isBookmarked = this.thread.isBookmarked;
+    }
   }
 
   handleUpvote(event: Event) {
@@ -236,6 +218,7 @@ export class ThreadCardComponent implements OnInit {
           if (this.userReaction === "upvote") {
             this.thread.upvoteCount = Math.max(0, this.thread.upvoteCount - 1);
             this.userReaction = null;
+            this.thread.userReaction = null;
           } else {
             if (this.userReaction === "downvote") {
               this.thread.downvoteCount = Math.max(
@@ -245,6 +228,7 @@ export class ThreadCardComponent implements OnInit {
             }
             this.thread.upvoteCount++;
             this.userReaction = "upvote";
+            this.thread.userReaction = "upvote";
           }
         },
         error: (error) => {
@@ -270,6 +254,7 @@ export class ThreadCardComponent implements OnInit {
               this.thread.downvoteCount - 1
             );
             this.userReaction = null;
+            this.thread.userReaction = null;
           } else {
             if (this.userReaction === "upvote") {
               this.thread.upvoteCount = Math.max(
@@ -279,6 +264,7 @@ export class ThreadCardComponent implements OnInit {
             }
             this.thread.downvoteCount++;
             this.userReaction = "downvote";
+            this.thread.userReaction = "downvote";
           }
         },
         error: (error) => {
@@ -298,6 +284,7 @@ export class ThreadCardComponent implements OnInit {
       this.bookmarkService.removeBookmark(this.thread.id).subscribe({
         next: () => {
           this.isBookmarked = false;
+          this.thread.isBookmarked = false;
         },
         error: (error) => {
           console.error("Error removing bookmark:", error);
@@ -307,6 +294,7 @@ export class ThreadCardComponent implements OnInit {
       this.bookmarkService.addBookmark(this.thread.id).subscribe({
         next: () => {
           this.isBookmarked = true;
+          this.thread.isBookmarked = true;
         },
         error: (error) => {
           console.error("Error adding bookmark:", error);

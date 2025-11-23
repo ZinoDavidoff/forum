@@ -1182,10 +1182,6 @@ export class ThreadDetailComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-      if (user && this.thread) {
-        this.loadUserReaction();
-        this.loadBookmarkStatus();
-      }
     });
 
     const data = this.route.snapshot.data[
@@ -1206,39 +1202,18 @@ export class ThreadDetailComponent implements OnInit {
         0
       );
 
-      if (this.currentUser && this.thread) {
-        this.loadUserReaction();
-        this.loadBookmarkStatus();
+      // Use data from thread if available (provided by backend)
+      if (this.thread.userReaction !== undefined) {
+        this.userReaction = this.thread.userReaction;
+      }
+      if (this.thread.isBookmarked !== undefined) {
+        this.isBookmarked = this.thread.isBookmarked;
       }
     }
 
     // Close dropdown when clicking outside
     document.addEventListener("click", () => {
       this.showThreadMenu = false;
-    });
-  }
-
-  loadUserReaction() {
-    if (!this.thread) return;
-    this.reactionService.getUserThreadReaction(this.thread.id).subscribe({
-      next: (response) => {
-        this.userReaction = response?.type || null;
-      },
-      error: () => {
-        this.userReaction = null;
-      },
-    });
-  }
-
-  loadBookmarkStatus() {
-    if (!this.thread) return;
-    this.bookmarkService.isBookmarked(this.thread.id).subscribe({
-      next: (response) => {
-        this.isBookmarked = response?.isBookmarked || false;
-      },
-      error: () => {
-        this.isBookmarked = false;
-      },
     });
   }
 
@@ -1258,6 +1233,7 @@ export class ThreadDetailComponent implements OnInit {
           if (this.userReaction === "upvote") {
             this.thread.upvoteCount = Math.max(0, this.thread.upvoteCount - 1);
             this.userReaction = null;
+            this.thread.userReaction = null;
           } else {
             if (this.userReaction === "downvote") {
               this.thread.downvoteCount = Math.max(
@@ -1267,6 +1243,7 @@ export class ThreadDetailComponent implements OnInit {
             }
             this.thread.upvoteCount++;
             this.userReaction = "upvote";
+            this.thread.userReaction = "upvote";
           }
         },
         error: (error) => {
@@ -1294,6 +1271,7 @@ export class ThreadDetailComponent implements OnInit {
               this.thread.downvoteCount - 1
             );
             this.userReaction = null;
+            this.thread.userReaction = null;
           } else {
             if (this.userReaction === "upvote") {
               this.thread.upvoteCount = Math.max(
@@ -1303,6 +1281,7 @@ export class ThreadDetailComponent implements OnInit {
             }
             this.thread.downvoteCount++;
             this.userReaction = "downvote";
+            this.thread.userReaction = "downvote";
           }
         },
         error: (error) => {
@@ -1323,6 +1302,7 @@ export class ThreadDetailComponent implements OnInit {
       this.bookmarkService.removeBookmark(this.thread.id).subscribe({
         next: () => {
           this.isBookmarked = false;
+          if (this.thread) this.thread.isBookmarked = false;
         },
         error: (error) => {
           console.error("Error removing bookmark:", error);
@@ -1332,6 +1312,7 @@ export class ThreadDetailComponent implements OnInit {
       this.bookmarkService.addBookmark(this.thread.id).subscribe({
         next: () => {
           this.isBookmarked = true;
+          if (this.thread) this.thread.isBookmarked = true;
         },
         error: (error) => {
           console.error("Error adding bookmark:", error);
