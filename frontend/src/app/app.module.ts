@@ -51,12 +51,14 @@ import {
   Loader2,
   MoreVertical,
   Edit3,
+  RefreshCw,
 } from "lucide-angular";
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { AuthInterceptor } from "./core/interceptors/auth.interceptor";
 import { DelayInterceptor } from "./core/interceptors/delay.interceptor";
+import { TimeoutInterceptor } from "./core/interceptors/timeout.interceptor";
 
 // Layout Components
 import { HeaderComponent } from "./layout/header/header.component";
@@ -81,6 +83,7 @@ import { CategoryBadgeComponent } from "./shared/components/category-badge/categ
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 import { ConfirmModalComponent } from "./shared/components/confirm-modal/confirm-modal.component";
 import { EmptyStateComponent } from "./shared/components/empty-state/empty-state.component";
+import { ErrorStateComponent } from "./shared/components/error-state/error-state.component";
 
 // Pipes
 import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
@@ -107,6 +110,7 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
     LoadingSpinnerComponent,
     ConfirmModalComponent,
     EmptyStateComponent,
+    ErrorStateComponent,
     TimeAgoPipe,
     CompactNumberPipe,
   ],
@@ -164,12 +168,18 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
       Loader2,
       MoreVertical,
       Edit3,
+      RefreshCw,
     }),
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TimeoutInterceptor,
       multi: true,
     },
     {

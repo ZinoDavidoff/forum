@@ -25,6 +25,7 @@
   color: var(--primary);
   font-size: 0.875rem;
   margin-top: var(--spacing-xs);
+  text-align: center;
 }
 
 .auth-footer {
@@ -35,4 +36,17 @@
 
 button[type="submit"] {
   width: 100%;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

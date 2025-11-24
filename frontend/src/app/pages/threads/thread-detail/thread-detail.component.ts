@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PostService } from "../../../core/services/post.service";
 import { ThreadService } from "../../../core/services/thread.service";
+import { CategoryService } from "../../../core/services/category.service";
 import { Thread, Post, Category } from "../../../core/models/models";
 import { ThreadDetailData } from "../../../core/resolvers/thread-detail.resolver";
 import {
@@ -18,9 +19,20 @@ import { AuthService } from "../../../core/services/auth.service";
 @Component({
   selector: "app-thread-detail",
   template: `
-    <div class="home-page">
+    <div [class.home-page]="!hasError">
       <div class="container">
-        <div class="reddit-layout">
+        <!-- Error State -->
+        <app-error-state
+          *ngIf="hasError"
+          [title]="'Unable to load thread'"
+          [message]="
+            'We could not load this thread. This might be due to a network issue or server timeout. Please try again.'
+          "
+          [retryText]="'Retry'"
+          [onRetryClick]="retryLoadData.bind(this)"
+        ></app-error-state>
+
+        <div class="reddit-layout" *ngIf="!hasError">
           <!-- Left Sidebar -->
           <aside class="left-sidebar">
             <div class="sidebar-widget card">
@@ -192,7 +204,7 @@ import { AuthService } from "../../../core/services/auth.service";
                       >
                         <i-lucide
                           name="loader-2"
-                          [size]="14"
+                          [size]="16"
                           *ngIf="submittingThreadEdit"
                           class="spinner"
                         ></i-lucide>
@@ -1317,12 +1329,15 @@ export class ThreadDetailComponent implements OnInit {
   submittingThreadEdit: boolean = false;
   showCategoryDropdown: boolean = false;
   similarThreads: Thread[] = [];
+  hasError = false;
+  threadId: string = "";
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private postService: PostService,
     private threadService: ThreadService,
+    private categoryService: CategoryService,
     private reactionService: ReactionService,
     private bookmarkService: BookmarkService,
     private authService: AuthService
@@ -1331,6 +1346,11 @@ export class ThreadDetailComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
+    });
+
+    // Get thread ID from route params
+    this.route.params.subscribe((params) => {
+      this.threadId = params["id"];
     });
 
     // Subscribe to route data changes to handle navigation between threads
@@ -1348,6 +1368,12 @@ export class ThreadDetailComponent implements OnInit {
   }
 
   private loadThreadData(data: ThreadDetailData) {
+    // Check if resolver encountered an error
+    if (data.error) {
+      this.hasError = true;
+      return;
+    }
+
     // Reset state when loading new thread
     this.isContentExpanded = false;
     this.showReplyBox = false;
@@ -1355,26 +1381,27 @@ export class ThreadDetailComponent implements OnInit {
     this.isEditingThread = false;
     this.showThreadMenu = false;
     this.selectedSort = "best";
+    this.hasError = false;
 
-    this.thread = data.thread;
-    this.posts = (data.posts.data || []).map((post: Post) => ({
+    this.thread = data.thread!;
+    this.posts = (data.posts!.data || []).map((post: Post) => ({
       ...post,
       replies: [],
     }));
-    this.totalPosts = data.posts.total;
-    this.lastPage = data.posts.lastPage;
-    this.currentPage = data.posts.page;
-    this.categories = data.categories;
+    this.totalPosts = data.posts!.total;
+    this.lastPage = data.posts!.lastPage;
+    this.currentPage = data.posts!.page;
+    this.categories = data.categories!;
     this.totalThreads = this.categories.reduce(
       (sum, cat) => sum + (cat.threadCount || 0),
       0
     );
 
     // Use data from thread if available (provided by backend)
-    if (this.thread.userReaction !== undefined) {
+    if (this.thread && this.thread.userReaction !== undefined) {
       this.userReaction = this.thread.userReaction;
     }
-    if (this.thread.isBookmarked !== undefined) {
+    if (this.thread && this.thread.isBookmarked !== undefined) {
       this.isBookmarked = this.thread.isBookmarked;
     }
 
@@ -1383,6 +1410,11 @@ export class ThreadDetailComponent implements OnInit {
 
     // Scroll to top when navigating to new thread
     window.scrollTo(0, 0);
+  }
+
+  retryLoadData() {
+    // Reload the page to trigger the resolver again
+    window.location.reload();
   }
 
   handleUpvote() {

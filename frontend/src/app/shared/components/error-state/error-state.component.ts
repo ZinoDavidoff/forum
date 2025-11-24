@@ -1,29 +1,25 @@
 import { Component, Input } from "@angular/core";
 
 @Component({
-  selector: "app-empty-state",
+  selector: "app-error-state",
   template: `
-    <div class="empty-state-container">
+    <div class="error-state-container">
       <div class="icon-container">
-        <div class="baby-icon">
+        <div class="error-icon">
           <i-lucide name="baby" [size]="64"></i-lucide>
         </div>
       </div>
-      <h3 class="empty-title">{{ title }}</h3>
-      <p class="empty-message">{{ message }}</p>
-      <button
-        *ngIf="showActionButton"
-        class="btn btn-primary"
-        (click)="onAction()"
-      >
-        <i-lucide [name]="actionIcon" [size]="18"></i-lucide>
-        {{ actionText }}
+      <h3 class="error-title">{{ title }}</h3>
+      <p class="error-message">{{ message }}</p>
+      <button class="btn btn-primary" (click)="onRetry()">
+        <i-lucide name="refresh-cw" [size]="18"></i-lucide>
+        {{ retryText }}
       </button>
     </div>
   `,
   styles: [
     `
-      .empty-state-container {
+      .error-state-container {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -37,7 +33,7 @@ import { Component, Input } from "@angular/core";
         margin-bottom: var(--spacing-lg);
       }
 
-      .baby-icon {
+      .error-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -48,17 +44,17 @@ import { Component, Input } from "@angular/core";
         padding: 0.5rem;
       }
 
-      .empty-title {
-        font-size: 1.25rem;
+      .error-title {
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--text-dark);
         margin: 0 0 var(--spacing-sm) 0;
       }
 
-      .empty-message {
+      .error-message {
         font-size: 1rem;
         color: var(--text-light);
-        margin: 0 0 var(--spacing-lg) 0;
+        margin: 0 0 var(--spacing-xl) 0;
         max-width: 400px;
       }
 
@@ -70,17 +66,17 @@ import { Component, Input } from "@angular/core";
     `,
   ],
 })
-export class EmptyStateComponent {
-  @Input() title: string = "Nothing here yet";
-  @Input() message: string = "Be the first one to start the conversation!";
-  @Input() showActionButton: boolean = false;
-  @Input() actionText: string = "Get Started";
-  @Input() actionIcon: string = "plus";
-  @Input() onActionClick?: () => void;
+export class ErrorStateComponent {
+  @Input() title: string = "Something went wrong";
+  @Input() message: string =
+    "We encountered an error while loading the content. Please try again.";
+  @Input() retryText: string = "Try Again";
+  @Input() onRetryClick?: () => void;
 
-  onAction() {
-    if (this.onActionClick) {
-      this.onActionClick();
+  onRetry() {
+    if (this.onRetryClick) {
+      this.onRetryClick();
     }
   }
 }
+

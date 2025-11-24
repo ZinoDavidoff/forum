@@ -51,7 +51,14 @@
           class="btn btn-primary btn-lg"
           [disabled]="loginForm.invalid || loading"
         >
-          {{ loading ? "Logging in..." : "Login" }}
+        <i-lucide
+        name="loader-2"
+        [size]="16"
+        *ngIf="loading"
+        class="spinner"
+      ></i-lucide>
+      <span *ngIf="!loading">Login</span>
+      <span *ngIf="loading">Logging in...</span>
         </button>
       </form>
 

@@ -1,6 +1,17 @@
-<div class="home-page">
+<div [class.home-page]="!hasError">
   <div class="container">
-    <div class="reddit-layout">
+    <!-- Error State -->
+    <app-error-state
+      *ngIf="hasError"
+      [title]="'Unable to load content'"
+      [message]="
+        'We could not load the forum content. This might be due to a network issue or server timeout. Please try again.'
+      "
+      [retryText]="'Retry'"
+      [onRetryClick]="retryLoadData.bind(this)"
+    ></app-error-state>
+
+    <div class="reddit-layout" *ngIf="!hasError">
       <!-- Left Sidebar -->
       <aside class="left-sidebar">
         <div class="sidebar-widget card">

@@ -4,16 +4,18 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from "@angular/router";
-import { Observable, forkJoin } from "rxjs";
+import { Observable, forkJoin, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 import { ThreadService } from "../services/thread.service";
 import { CategoryService } from "../services/category.service";
 import { UserService } from "../services/user.service";
 import { Thread, Category } from "../models/models";
 
 export interface HomeData {
-  threads: { data: Thread[]; page: number; lastPage: number };
-  categories: Category[];
-  stats: { totalMembers: number; totalThreads: number; totalTopics: number };
+  threads?: { data: Thread[]; page: number; lastPage: number };
+  categories?: Category[];
+  stats?: { totalMembers: number; totalThreads: number; totalTopics: number };
+  error?: boolean;
 }
 
 @Injectable({
@@ -42,6 +44,12 @@ export class HomeResolver implements Resolve<HomeData> {
       ),
       categories: this.categoryService.getCategories(),
       stats: this.userService.getStats(),
-    });
+    }).pipe(
+      map((data) => data as HomeData),
+      catchError((error) => {
+        console.error("Error in HomeResolver:", error);
+        return of({ error: true } as HomeData);
+      })
+    );
   }
 }

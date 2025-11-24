@@ -165,7 +165,7 @@ import { AuthService } from "../../../core/services/auth.service";
                 class="spinner"
               ></i-lucide>
               <span *ngIf="!submittingReply">Reply</span>
-              <span *ngIf="submittingReply">Posting...</span>
+              <span *ngIf="submittingReply">Replying...</span>
             </button>
           </div>
         </div>

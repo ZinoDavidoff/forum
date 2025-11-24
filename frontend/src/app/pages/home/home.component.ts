@@ -27,6 +27,7 @@ export class HomeComponent implements OnInit {
   lastPage = 1;
   selectedCategoryId: string | null = null;
   selectedSort: string = "hot";
+  hasError = false;
 
   // Post creation state
   isCreatingPost = false;
@@ -62,13 +63,20 @@ export class HomeComponent implements OnInit {
 
     // Get data from resolver
     const homeData = this.route.snapshot.data["homeData"] as HomeData;
-    this.categories = homeData.categories;
-    this.totalMembers = homeData.stats.totalMembers;
-    this.totalThreads = homeData.stats.totalThreads;
-    this.totalTopics = homeData.stats.totalTopics;
-    this.featuredThreads = homeData.threads.data;
-    this.lastPage = homeData.threads.lastPage;
-    this.currentPage = homeData.threads.page;
+
+    // Check if resolver encountered an error
+    if (homeData.error) {
+      this.hasError = true;
+      return;
+    }
+
+    this.categories = homeData.categories!;
+    this.totalMembers = homeData.stats!.totalMembers;
+    this.totalThreads = homeData.stats!.totalThreads;
+    this.totalTopics = homeData.stats!.totalTopics;
+    this.featuredThreads = homeData.threads!.data;
+    this.lastPage = homeData.threads!.lastPage;
+    this.currentPage = homeData.threads!.page;
 
     // Get initial categoryId from query params
     const initialCategoryId = this.route.snapshot.queryParams["categoryId"];
@@ -84,6 +92,7 @@ export class HomeComponent implements OnInit {
 
   loadThreads(categoryId?: string, sort?: string) {
     this.loading = true;
+    this.hasError = false;
     const sortParam = sort || this.selectedSort;
     this.threadService
       .getThreads(1, 5, categoryId, undefined, sortParam)
@@ -93,12 +102,19 @@ export class HomeComponent implements OnInit {
           this.currentPage = response.page;
           this.lastPage = response.lastPage;
           this.loading = false;
+          this.hasError = false;
         },
         error: (error) => {
           console.error("Error loading threads:", error);
           this.loading = false;
+          this.hasError = true;
         },
       });
+  }
+
+  retryLoadData() {
+    // Reload the page to trigger the resolver again
+    window.location.reload();
   }
 
   get hasMoreThreads(): boolean {
