@@ -43,7 +43,7 @@ import { AuthService } from "../../../core/services/auth.service";
             (click)="handleUpvote($event)"
           >
             <i-lucide name="chevron-up" [size]="18"></i-lucide>
-            {{ thread.upvoteCount || 0 }}
+            {{ thread.upvoteCount || 0 | compactNumber }}
           </button>
           <button
             class="action-btn downvote-btn"
@@ -51,11 +51,11 @@ import { AuthService } from "../../../core/services/auth.service";
             (click)="handleDownvote($event)"
           >
             <i-lucide name="chevron-down" [size]="18"></i-lucide>
-            {{ thread.downvoteCount || 0 }}
+            {{ thread.downvoteCount || 0 | compactNumber }}
           </button>
           <button class="action-btn">
             <i-lucide name="message-square" [size]="18"></i-lucide>
-            {{ thread.replyCount }}
+            {{ thread.replyCount | compactNumber }}
           </button>
           <button class="action-btn" (click)="handleShare($event)">
             <i-lucide name="share" [size]="18"></i-lucide>

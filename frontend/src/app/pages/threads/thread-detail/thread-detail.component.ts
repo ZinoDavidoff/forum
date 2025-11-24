@@ -282,7 +282,7 @@ import { AuthService } from "../../../core/services/auth.service";
                     (click)="handleUpvote()"
                   >
                     <i-lucide name="chevron-up" [size]="18"></i-lucide>
-                    {{ thread.upvoteCount || 0 }}
+                    {{ thread.upvoteCount || 0 | compactNumber }}
                   </button>
                   <button
                     class="action-btn downvote-btn"
@@ -290,7 +290,7 @@ import { AuthService } from "../../../core/services/auth.service";
                     (click)="handleDownvote()"
                   >
                     <i-lucide name="chevron-down" [size]="18"></i-lucide>
-                    {{ thread.downvoteCount || 0 }}
+                    {{ thread.downvoteCount || 0 | compactNumber }}
                   </button>
                   <button
                     class="action-btn"
@@ -459,11 +459,13 @@ import { AuthService } from "../../../core/services/auth.service";
               <h3>Thread Stats</h3>
               <div class="stat-item">
                 <i-lucide name="message-square" [size]="18"></i-lucide>
-                <span>{{ thread?.replyCount || 0 }} Comments</span>
+                <span
+                  >{{ thread?.replyCount || 0 | compactNumber }} Comments</span
+                >
               </div>
               <div class="stat-item">
                 <i-lucide name="eye" [size]="18"></i-lucide>
-                <span>{{ thread?.viewCount || 0 }} Views</span>
+                <span>{{ thread?.viewCount || 0 | compactNumber }} Views</span>
               </div>
             </div>
 
@@ -497,11 +499,11 @@ import { AuthService } from "../../../core/services/auth.service";
                     <div class="similar-thread-stats">
                       <span class="stat-mini">
                         <i-lucide name="message-square" [size]="12"></i-lucide>
-                        {{ similarThread.replyCount || 0 }}
+                        {{ similarThread.replyCount || 0 | compactNumber }}
                       </span>
                       <span class="stat-mini">
                         <i-lucide name="chevron-up" [size]="12"></i-lucide>
-                        {{ similarThread.upvoteCount || 0 }}
+                        {{ similarThread.upvoteCount || 0 | compactNumber }}
                       </span>
                     </div>
                   </div>

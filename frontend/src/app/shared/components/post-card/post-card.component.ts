@@ -67,7 +67,11 @@ import { AuthService } from "../../../core/services/auth.service";
           <span class="author-badge" *ngIf="isOriginalAuthor">Author</span>
           <span class="dot">•</span>
           <span class="post-time">{{ post.createdAt | timeAgo }}</span>
-          <span class="dot" *ngIf="post.updatedAt && post.updatedAt !== post.createdAt">•</span>
+          <span
+            class="dot"
+            *ngIf="post.updatedAt && post.updatedAt !== post.createdAt"
+            >•</span
+          >
           <span
             class="edited-indicator"
             *ngIf="post.updatedAt && post.updatedAt !== post.createdAt"
@@ -100,7 +104,7 @@ import { AuthService } from "../../../core/services/auth.service";
             (click)="handleUpvote()"
           >
             <i-lucide name="chevron-up" [size]="16"></i-lucide>
-            {{ post.upvoteCount || 0 }}
+            {{ post.upvoteCount || 0 | compactNumber }}
           </button>
           <button
             class="action-btn downvote-btn"
@@ -108,7 +112,7 @@ import { AuthService } from "../../../core/services/auth.service";
             (click)="handleDownvote()"
           >
             <i-lucide name="chevron-down" [size]="16"></i-lucide>
-            {{ post.downvoteCount || 0 }}
+            {{ post.downvoteCount || 0 | compactNumber }}
           </button>
           <button
             class="action-btn"
@@ -173,7 +177,7 @@ import { AuthService } from "../../../core/services/auth.service";
           >
             <i-lucide name="corner-down-right" [size]="14"></i-lucide>
             <span *ngIf="!loadingReplies">
-              View {{ post.replyCount }}
+              View {{ post.replyCount | compactNumber }}
               {{ post.replyCount === 1 ? "reply" : "replies" }}
             </span>
             <span *ngIf="loadingReplies">Loading...</span>
@@ -186,7 +190,7 @@ import { AuthService } from "../../../core/services/auth.service";
               (click)="toggleReplies()"
             >
               <i-lucide name="corner-down-right" [size]="14"></i-lucide>
-              Hide {{ post.replyCount }}
+              Hide {{ post.replyCount | compactNumber }}
               {{ post.replyCount === 1 ? "reply" : "replies" }}
             </button>
             <app-post-card
