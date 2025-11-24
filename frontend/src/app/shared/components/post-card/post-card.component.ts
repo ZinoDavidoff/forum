@@ -53,7 +53,11 @@ import { AuthService } from "../../../core/services/auth.service";
     </div>
 
     <!-- View Mode -->
-    <div *ngIf="!isEditingPost" class="comment-thread">
+    <div
+      *ngIf="!isEditingPost"
+      class="comment-thread"
+      [class.nested]="isNested"
+    >
       <div class="comment-left">
         <img
           [src]="post.author.avatar || 'assets/default-avatar.svg'"
@@ -228,6 +232,10 @@ import { AuthService } from "../../../core/services/auth.service";
         display: flex;
         gap: 8px;
         padding: 8px 0;
+      }
+
+      .comment-thread.nested {
+        padding-bottom: 0;
       }
 
       .comment-left {

@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { Router } from "@angular/router";
+import { Subject } from "rxjs";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class PostEditorService {
   private expandEditorSubject = new Subject<void>();
@@ -13,8 +13,8 @@ export class PostEditorService {
 
   openEditor() {
     // Navigate to home if not already there
-    if (!this.router.url.startsWith('/?')) {
-      this.router.navigate(['/']);
+    if (!this.router.url.startsWith("/?")) {
+      this.router.navigate(["/"]);
     }
     // Emit event to expand the editor
     setTimeout(() => {
@@ -22,4 +22,3 @@ export class PostEditorService {
     }, 100);
   }
 }
-
