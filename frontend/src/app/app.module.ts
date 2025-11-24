@@ -52,6 +52,8 @@ import {
   MoreVertical,
   Edit3,
   RefreshCw,
+  Instagram,
+  Youtube,
 } from "lucide-angular";
 
 import { AppRoutingModule } from "./app-routing.module";
@@ -169,6 +171,8 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
       MoreVertical,
       Edit3,
       RefreshCw,
+      Instagram,
+      Youtube,
     }),
   ],
   providers: [

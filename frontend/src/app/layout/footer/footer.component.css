@@ -19,6 +19,11 @@
   color: var(--primary);
 }
 
+.footer-section:first-child h4 {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
 .logo-icon {
   padding: .25rem;
   background: var(--primary);
@@ -31,7 +36,14 @@
   display: block;
   margin-bottom: var(--spacing-sm);
   color: var(--text-dark);
+  font-size: .9rem;
+  font-weight: 500;
   transition: all 0.3s ease;
+}
+
+.footer-section p,
+.footer-bottom p {
+  font-size: 0.875rem;
 }
 
 .footer-section a:hover {
