@@ -9,6 +9,10 @@ export class UpdateThreadDto {
   @IsOptional()
   content?: string;
 
+  @IsString()
+  @IsOptional()
+  categoryId?: string;
+
   @IsArray()
   @IsOptional()
   tags?: string[];

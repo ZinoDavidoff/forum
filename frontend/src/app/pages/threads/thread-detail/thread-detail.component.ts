@@ -220,7 +220,14 @@ import { AuthService } from "../../../core/services/auth.service";
                       <span class="time-ago">{{
                         thread.createdAt | timeAgo
                       }}</span>
-                      <span class="dot" *ngIf="thread.updatedAt && thread.updatedAt !== thread.createdAt">•</span>
+                      <span
+                        class="dot"
+                        *ngIf="
+                          thread.updatedAt &&
+                          thread.updatedAt !== thread.createdAt
+                        "
+                        >•</span
+                      >
                       <span
                         class="edited-indicator"
                         *ngIf="
@@ -1587,11 +1594,8 @@ export class ThreadDetailComponent implements OnInit {
             .map((t: string) => t.trim())
             .filter((t: string) => t)
         : [],
+      isLocked: this.editThreadData.isLocked,
     };
-
-    if (this.editThreadData.isLocked) {
-      updateData.isLocked = true;
-    }
 
     this.threadService.updateThread(this.thread.id, updateData).subscribe({
       next: (updatedThread) => {

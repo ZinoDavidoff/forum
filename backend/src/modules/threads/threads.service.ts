@@ -230,14 +230,47 @@ export class ThreadsService {
   }
 
   async update(id: string, updateThreadDto: UpdateThreadDto, userId: string) {
-    const thread = await this.findOne(id);
+    const thread = await this.threadsRepository.findOne({
+      where: { id },
+      relations: ["author", "category"],
+    });
+
+    if (!thread) {
+      throw new NotFoundException("Thread not found");
+    }
 
     if (thread.author.id !== userId) {
       throw new NotFoundException("Not authorized");
     }
 
+    const oldCategoryId = thread.category.id;
+
+    // Handle category change - update category counts
+    if (
+      updateThreadDto.categoryId &&
+      updateThreadDto.categoryId !== oldCategoryId
+    ) {
+      // Decrement old category count
+      await this.categoriesService.decrementThreadCount(oldCategoryId);
+      // Increment new category count
+      await this.categoriesService.incrementThreadCount(
+        updateThreadDto.categoryId
+      );
+      // Update the category relation
+      thread.category = { id: updateThreadDto.categoryId } as any;
+      delete (updateThreadDto as any).categoryId;
+    }
+
+    // Apply other updates
     Object.assign(thread, updateThreadDto);
-    return await this.threadsRepository.save(thread);
+
+    const savedThread = await this.threadsRepository.save(thread);
+
+    // Return the updated thread with all relations
+    return await this.threadsRepository.findOne({
+      where: { id },
+      relations: ["author", "category", "lastPost"],
+    });
   }
 
   async remove(id: string, userId: string) {
