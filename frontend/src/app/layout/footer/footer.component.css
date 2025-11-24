@@ -19,6 +19,14 @@
   color: var(--primary);
 }
 
+.logo-icon {
+  padding: .25rem;
+  background: var(--primary);
+  color: var(--bg-primary);
+  border-radius: 50%;
+  line-height: 0;
+}
+
 .footer-section a {
   display: block;
   margin-bottom: var(--spacing-sm);
