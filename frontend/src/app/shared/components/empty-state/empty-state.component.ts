@@ -28,7 +28,6 @@ import { Component, Input } from "@angular/core";
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-xxl);
         text-align: center;
         min-height: 300px;
       }
@@ -49,14 +48,14 @@ import { Component, Input } from "@angular/core";
       }
 
       .empty-title {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
         font-weight: 700;
         color: var(--text-dark);
         margin: 0 0 var(--spacing-sm) 0;
       }
 
       .empty-message {
-        font-size: 1rem;
+        font-size: 0.875rem;
         color: var(--text-light);
         margin: 0 0 var(--spacing-lg) 0;
         max-width: 400px;

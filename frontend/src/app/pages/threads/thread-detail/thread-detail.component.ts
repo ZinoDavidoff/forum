@@ -496,9 +496,12 @@ import { AuthService } from "../../../core/services/auth.service";
               </div>
             </div>
 
-            <div class="sidebar-widget card" *ngIf="similarThreads.length > 0">
+            <div class="sidebar-widget card">
               <h3>Similar Threads</h3>
-              <div class="similar-threads-list">
+              <div
+                class="similar-threads-list"
+                *ngIf="similarThreads.length > 0"
+              >
                 <a
                   *ngFor="let similarThread of similarThreads"
                   [routerLink]="['/threads', similarThread.id]"
@@ -535,6 +538,15 @@ import { AuthService } from "../../../core/services/auth.service";
                     </div>
                   </div>
                 </a>
+              </div>
+              <div
+                class="empty-similar-threads"
+                *ngIf="similarThreads.length === 0"
+              >
+                <div class="empty-icon">
+                  <i-lucide name="baby" [size]="32"></i-lucide>
+                </div>
+                <p class="empty-text">No similar threads found</p>
               </div>
             </div>
           </aside>
@@ -1210,7 +1222,7 @@ import { AuthService } from "../../../core/services/auth.service";
       }
 
       .similar-thread-title {
-        font-size: 0.8125rem;
+        font-size: 0.875rem;
         font-weight: 600;
         line-height: 1.3;
         color: var(--text-dark);
@@ -1226,7 +1238,7 @@ import { AuthService } from "../../../core/services/auth.service";
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.6875rem;
+        font-size: 0.75rem;
         color: var(--text-light);
       }
 
@@ -1258,14 +1270,40 @@ import { AuthService } from "../../../core/services/auth.service";
       .stat-mini {
         display: flex;
         align-items: center;
-        gap: 3px;
-        font-size: 0.6875rem;
+        gap: 4px;
+        font-size: 0.75rem;
         color: var(--text-light);
         font-weight: 600;
       }
 
       .stat-mini i-lucide {
         opacity: 0.7;
+      }
+
+      .empty-similar-threads {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bg-primary);
+        line-height: 0;
+        border-radius: 50%;
+        background: var(--primary);
+        padding: 0.375rem;
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .empty-text {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin: 0;
       }
 
       @media (max-width: 1024px) {
