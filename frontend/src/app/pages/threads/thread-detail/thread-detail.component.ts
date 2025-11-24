@@ -1296,7 +1296,7 @@ import { AuthService } from "../../../core/services/auth.service";
         line-height: 0;
         border-radius: 50%;
         background: var(--primary);
-        padding: 0.375rem;
+        padding: 0.25rem;
         margin-bottom: var(--spacing-sm);
       }
 
