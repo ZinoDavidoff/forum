@@ -473,7 +473,6 @@
   display: flex;
   gap: var(--spacing-lg);
   padding: var(--spacing-md) 0;
-  margin-bottom: var(--spacing-md);
 }
 
 .stat {
