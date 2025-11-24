@@ -69,7 +69,6 @@ import { LoginComponent } from "./pages/auth/login/login.component";
 import { RegisterComponent } from "./pages/auth/register/register.component";
 import { ThreadListComponent } from "./pages/threads/thread-list/thread-list.component";
 import { ThreadDetailComponent } from "./pages/threads/thread-detail/thread-detail.component";
-import { ThreadCreateComponent } from "./pages/threads/thread-create/thread-create.component";
 import { ProfileComponent } from "./pages/profile/profile.component";
 import { MessagesComponent } from "./pages/messages/messages.component";
 import { NotificationsComponent } from "./pages/notifications/notifications.component";
@@ -97,7 +96,6 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
     RegisterComponent,
     ThreadListComponent,
     ThreadDetailComponent,
-    ThreadCreateComponent,
     ProfileComponent,
     MessagesComponent,
     NotificationsComponent,

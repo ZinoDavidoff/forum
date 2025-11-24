@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { ThreadService } from "../../../core/services/thread.service";
+import { PostEditorService } from "../../../core/services/post-editor.service";
 import { Thread } from "../../../core/models/models";
 
 @Component({
@@ -11,7 +12,7 @@ import { Thread } from "../../../core/models/models";
         <h1>
           <i-lucide name="message-circle" [size]="32"></i-lucide> Discussions
         </h1>
-        <button class="btn btn-primary" routerLink="/threads/create">
+        <button class="btn btn-primary" (click)="openPostEditor()">
           <i-lucide name="edit" [size]="18"></i-lucide> New Thread
         </button>
       </div>
@@ -46,6 +47,7 @@ export class ThreadListComponent implements OnInit {
 
   constructor(
     private threadService: ThreadService,
+    private postEditorService: PostEditorService,
     private route: ActivatedRoute
   ) {}
 
@@ -54,6 +56,10 @@ export class ThreadListComponent implements OnInit {
       const categoryId = params["categoryId"];
       this.loadThreads(categoryId);
     });
+  }
+
+  openPostEditor() {
+    this.postEditorService.openEditor();
   }
 
   loadThreads(categoryId?: string) {

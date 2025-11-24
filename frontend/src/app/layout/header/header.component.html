@@ -15,7 +15,7 @@
 
       <div class="header-actions">
         <div *ngIf="currentUser; else loginButtons" class="user-menu">
-          <button class="btn btn-primary" routerLink="/threads/create">
+          <button class="btn btn-primary" (click)="openPostEditor()">
             <i-lucide name="plus" [size]="18"></i-lucide>
           </button>
           <button class="icon-btn" routerLink="/messages">

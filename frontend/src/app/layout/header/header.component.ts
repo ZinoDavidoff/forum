@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "../../core/services/auth.service";
+import { PostEditorService } from "../../core/services/post-editor.service";
 import { User } from "../../core/models/models";
 
 @Component({
@@ -12,12 +13,20 @@ export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   isMenuOpen = false;
 
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(
+    public authService: AuthService,
+    private postEditorService: PostEditorService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
     });
+  }
+
+  openPostEditor() {
+    this.postEditorService.openEditor();
   }
 
   toggleMenu() {

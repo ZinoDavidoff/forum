@@ -5,6 +5,7 @@ import { ThreadService } from "../../core/services/thread.service";
 import { CategoryService } from "../../core/services/category.service";
 import { AuthService } from "../../core/services/auth.service";
 import { UserService } from "../../core/services/user.service";
+import { PostEditorService } from "../../core/services/post-editor.service";
 import { Thread, Category, User } from "../../core/models/models";
 import { HomeData } from "../../core/resolvers/home.resolver";
 
@@ -44,6 +45,7 @@ export class HomeComponent implements OnInit {
     private categoryService: CategoryService,
     private authService: AuthService,
     private userService: UserService,
+    private postEditorService: PostEditorService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -51,6 +53,11 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
+    });
+
+    // Listen for editor open events
+    this.postEditorService.expandEditor$.subscribe(() => {
+      this.expandPostCreator();
     });
 
     // Get data from resolver
