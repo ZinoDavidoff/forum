@@ -72,7 +72,7 @@ export class ThreadsService {
     let userReactions = new Map<string, string>();
     let userBookmarks = new Set<string>();
 
-    if (userId) {
+    if (userId && threads.length > 0) {
       const threadIds = threads.map((t) => t.id);
 
       // Fetch all user reactions for these threads in one query
@@ -384,5 +384,115 @@ export class ThreadsService {
     );
 
     return posts.length;
+  }
+
+  async findSimilar(threadId: string, limit: number = 5, userId?: string) {
+    // Get the current thread
+    const currentThread = await this.threadsRepository.findOne({
+      where: { id: threadId },
+      relations: ["category"],
+    });
+
+    if (!currentThread) {
+      throw new NotFoundException("Thread not found");
+    }
+
+    // Find threads in the same category, excluding the current thread
+    const candidateThreads = await this.threadsRepository.find({
+      where: {
+        category: { id: currentThread.category.id },
+      },
+      relations: ["author", "category"],
+      take: 50, // Get more candidates to score
+    });
+
+    // Filter out the current thread
+    const filteredThreads = candidateThreads.filter((t) => t.id !== threadId);
+
+    // Calculate similarity scores
+    const threadsWithScores = filteredThreads.map((thread) => {
+      let score = 0;
+
+      // Base score for being in the same category
+      score += 10;
+
+      // Score for matching tags
+      if (currentThread.tags && thread.tags) {
+        const currentTags = currentThread.tags.map((t) => t.toLowerCase());
+        const threadTags = thread.tags.map((t) => t.toLowerCase());
+        const matchingTags = currentTags.filter((tag) =>
+          threadTags.includes(tag)
+        );
+        score += matchingTags.length * 5;
+      }
+
+      // Bonus for popular threads
+      score += Math.min(thread.upvoteCount / 10, 5);
+      score += Math.min(thread.replyCount / 5, 3);
+
+      // Penalty for old threads (prefer recent content)
+      const daysSinceUpdate = Math.floor(
+        (Date.now() - new Date(thread.updatedAt).getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+      score -= Math.min(daysSinceUpdate / 30, 5);
+
+      return { thread, score };
+    });
+
+    // Sort by score (highest first) and take the top N
+    const similarThreads = threadsWithScores
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((item) => item.thread);
+
+    // Return early if no similar threads found
+    if (similarThreads.length === 0) {
+      return [];
+    }
+
+    // Add user-specific data if userId provided
+    if (userId) {
+      const threadIds = similarThreads.map((t) => t.id);
+
+      // Get user reactions
+      const reactions = await this.reactionsRepository.find({
+        where: {
+          user: { id: userId },
+          thread: { id: In(threadIds) },
+          targetType: TargetType.THREAD,
+        },
+        relations: ["thread"],
+      });
+
+      const userReactions = new Map<string, string>();
+      reactions.forEach((reaction) => {
+        userReactions.set(reaction.thread.id, reaction.type);
+      });
+
+      // Get user bookmarks
+      const userWithBookmarks = await this.threadsRepository
+        .createQueryBuilder("thread")
+        .innerJoin("user_bookmarks", "ub", "ub.threadsId = thread.id")
+        .where("ub.usersId = :userId", { userId })
+        .andWhere("thread.id IN (:...threadIds)", { threadIds })
+        .select("thread.id")
+        .getMany();
+
+      const userBookmarks = new Set<string>();
+      userWithBookmarks.forEach((thread) => {
+        userBookmarks.add(thread.id);
+      });
+
+      // Add user-specific fields
+      return similarThreads.map((thread) => {
+        const threadWithUserData = thread as any;
+        threadWithUserData.userReaction = userReactions.get(thread.id) || null;
+        threadWithUserData.isBookmarked = userBookmarks.has(thread.id);
+        return threadWithUserData;
+      });
+    }
+
+    return similarThreads;
   }
 }

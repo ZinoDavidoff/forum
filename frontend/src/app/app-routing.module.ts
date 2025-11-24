@@ -26,6 +26,7 @@ const routes: Routes = [
     path: "threads/:id",
     component: ThreadDetailComponent,
     resolve: { threadDetailData: ThreadDetailResolver },
+    runGuardsAndResolvers: "paramsOrQueryParamsChange",
   },
   { path: "profile/:id", component: ProfileComponent },
   { path: "messages", component: MessagesComponent, canActivate: [AuthGuard] },

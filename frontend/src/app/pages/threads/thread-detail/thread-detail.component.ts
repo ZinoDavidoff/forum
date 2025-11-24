@@ -466,6 +466,48 @@ import { AuthService } from "../../../core/services/auth.service";
                 <span>{{ thread?.viewCount || 0 }} Views</span>
               </div>
             </div>
+
+            <div class="sidebar-widget card" *ngIf="similarThreads.length > 0">
+              <h3>Similar Threads</h3>
+              <div class="similar-threads-list">
+                <a
+                  *ngFor="let similarThread of similarThreads"
+                  [routerLink]="['/threads', similarThread.id]"
+                  class="similar-thread-item"
+                >
+                  <div class="similar-thread-header">
+                    <span class="similar-thread-title">{{
+                      similarThread.title
+                    }}</span>
+                  </div>
+                  <div class="similar-thread-meta">
+                    <div class="similar-thread-author">
+                      <img
+                        [src]="
+                          similarThread.author.avatar ||
+                          'assets/default-avatar.svg'
+                        "
+                        [alt]="similarThread.author.username"
+                        class="similar-thread-avatar"
+                      />
+                      <span class="similar-thread-username">{{
+                        similarThread.author.username
+                      }}</span>
+                    </div>
+                    <div class="similar-thread-stats">
+                      <span class="stat-mini">
+                        <i-lucide name="message-square" [size]="12"></i-lucide>
+                        {{ similarThread.replyCount || 0 }}
+                      </span>
+                      <span class="stat-mini">
+                        <i-lucide name="chevron-up" [size]="12"></i-lucide>
+                        {{ similarThread.upvoteCount || 0 }}
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
           </aside>
         </div>
       </div>
@@ -475,7 +517,7 @@ import { AuthService } from "../../../core/services/auth.service";
     `
       .reddit-layout {
         display: grid;
-        grid-template-columns: 300px 1fr 250px;
+        grid-template-columns: 300px 1fr 300px;
         gap: var(--spacing-md);
         padding: var(--spacing-md) 0;
       }
@@ -1115,9 +1157,91 @@ import { AuthService } from "../../../core/services/auth.service";
         }
       }
 
+      /* Similar Threads Styles */
+      .similar-threads-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .similar-thread-item {
+        display: block;
+        padding: 0;
+        text-decoration: none;
+        color: var(--text-dark);
+        transition: all 0.2s ease;
+      }
+
+      .similar-thread-item:hover .similar-thread-title {
+        color: var(--primary);
+      }
+
+      .similar-thread-header {
+        margin-bottom: 6px;
+      }
+
+      .similar-thread-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text-dark);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.15s ease;
+      }
+
+      .similar-thread-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.6875rem;
+        color: var(--text-light);
+      }
+
+      .similar-thread-author {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .similar-thread-avatar {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .similar-thread-username {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .similar-thread-stats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .stat-mini {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.6875rem;
+        color: var(--text-light);
+        font-weight: 600;
+      }
+
+      .stat-mini i-lucide {
+        opacity: 0.7;
+      }
+
       @media (max-width: 1024px) {
         .reddit-layout {
-          grid-template-columns: 1fr 250px;
+          grid-template-columns: 1fr 300px;
         }
 
         .left-sidebar {
@@ -1175,6 +1299,7 @@ export class ThreadDetailComponent implements OnInit {
   };
   submittingThreadEdit: boolean = false;
   showCategoryDropdown: boolean = false;
+  similarThreads: Thread[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -1191,37 +1316,56 @@ export class ThreadDetailComponent implements OnInit {
       this.currentUser = user;
     });
 
-    const data = this.route.snapshot.data[
-      "threadDetailData"
-    ] as ThreadDetailData;
-    if (data) {
-      this.thread = data.thread;
-      this.posts = (data.posts.data || []).map((post: Post) => ({
-        ...post,
-        replies: [],
-      }));
-      this.totalPosts = data.posts.total;
-      this.lastPage = data.posts.lastPage;
-      this.currentPage = data.posts.page;
-      this.categories = data.categories;
-      this.totalThreads = this.categories.reduce(
-        (sum, cat) => sum + (cat.threadCount || 0),
-        0
-      );
-
-      // Use data from thread if available (provided by backend)
-      if (this.thread.userReaction !== undefined) {
-        this.userReaction = this.thread.userReaction;
+    // Subscribe to route data changes to handle navigation between threads
+    this.route.data.subscribe((data: any) => {
+      const threadDetailData = data["threadDetailData"] as ThreadDetailData;
+      if (threadDetailData) {
+        this.loadThreadData(threadDetailData);
       }
-      if (this.thread.isBookmarked !== undefined) {
-        this.isBookmarked = this.thread.isBookmarked;
-      }
-    }
+    });
 
     // Close dropdown when clicking outside
     document.addEventListener("click", () => {
       this.showThreadMenu = false;
     });
+  }
+
+  private loadThreadData(data: ThreadDetailData) {
+    // Reset state when loading new thread
+    this.isContentExpanded = false;
+    this.showReplyBox = false;
+    this.replyContent = "";
+    this.isEditingThread = false;
+    this.showThreadMenu = false;
+    this.selectedSort = "best";
+
+    this.thread = data.thread;
+    this.posts = (data.posts.data || []).map((post: Post) => ({
+      ...post,
+      replies: [],
+    }));
+    this.totalPosts = data.posts.total;
+    this.lastPage = data.posts.lastPage;
+    this.currentPage = data.posts.page;
+    this.categories = data.categories;
+    this.totalThreads = this.categories.reduce(
+      (sum, cat) => sum + (cat.threadCount || 0),
+      0
+    );
+
+    // Use data from thread if available (provided by backend)
+    if (this.thread.userReaction !== undefined) {
+      this.userReaction = this.thread.userReaction;
+    }
+    if (this.thread.isBookmarked !== undefined) {
+      this.isBookmarked = this.thread.isBookmarked;
+    }
+
+    // Load similar threads from resolved data
+    this.similarThreads = data.similarThreads || [];
+
+    // Scroll to top when navigating to new thread
+    window.scrollTo(0, 0);
   }
 
   handleUpvote() {

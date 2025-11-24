@@ -50,4 +50,10 @@ export class ThreadService {
   deleteThread(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  getSimilarThreads(id: string, limit: number = 5): Observable<Thread[]> {
+    return this.http.get<Thread[]>(`${this.apiUrl}/${id}/similar`, {
+      params: new HttpParams().set("limit", limit.toString()),
+    });
+  }
 }

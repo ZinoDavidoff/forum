@@ -31,7 +31,25 @@ export class ThreadsController {
     @Query("sort") sort: string = "hot"
   ) {
     const userId = req.user?.id;
-    return this.threadsService.findAll(page, limit, categoryId, search, sort, userId);
+    return this.threadsService.findAll(
+      page,
+      limit,
+      categoryId,
+      search,
+      sort,
+      userId
+    );
+  }
+
+  @Get(":id/similar")
+  @UseGuards(OptionalJwtAuthGuard)
+  findSimilar(
+    @Request() req,
+    @Param("id") id: string,
+    @Query("limit") limit: number = 5
+  ) {
+    const userId = req.user?.id;
+    return this.threadsService.findSimilar(id, limit, userId);
   }
 
   @Get(":id")

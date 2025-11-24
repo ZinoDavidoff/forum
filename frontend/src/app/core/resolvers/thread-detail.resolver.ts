@@ -14,6 +14,7 @@ export interface ThreadDetailData {
   thread: Thread;
   posts: { data: Post[]; page: number; lastPage: number; total: number };
   categories: Category[];
+  similarThreads: Thread[];
 }
 
 @Injectable({
@@ -36,6 +37,7 @@ export class ThreadDetailResolver implements Resolve<ThreadDetailData> {
       thread: this.threadService.getThread(id),
       posts: this.postService.getPostsByThread(id, 1, 20, sort),
       categories: this.categoryService.getCategories(),
+      similarThreads: this.threadService.getSimilarThreads(id, 5),
     });
   }
 }
