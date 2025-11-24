@@ -142,6 +142,10 @@ export class HomeComponent implements OnInit {
     this.loadThreads(this.selectedCategoryId || undefined, sort);
   }
 
+  openPostEditor() {
+    this.expandPostCreator();
+  }
+
   expandPostCreator() {
     if (!this.currentUser) {
       this.router.navigate(["/login"]);

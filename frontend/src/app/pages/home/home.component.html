@@ -229,17 +229,35 @@
           </button>
         </div>
 
-        <div class="threads-list" *ngIf="!loading">
+        <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+        <div
+          class="threads-list"
+          *ngIf="!loading && featuredThreads.length > 0"
+        >
           <app-thread-card
             *ngFor="let thread of featuredThreads"
             [thread]="thread"
           ></app-thread-card>
         </div>
 
-        <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+        <app-empty-state
+          *ngIf="!loading && featuredThreads.length === 0"
+          [title]="'No threads yet'"
+          [message]="
+            'Be the first one to start a conversation! Share your thoughts, ask questions, or start a discussion.'
+          "
+          [showActionButton]="true"
+          [actionText]="'Create Thread'"
+          [actionIcon]="'edit'"
+          [onActionClick]="openPostEditor.bind(this)"
+        ></app-empty-state>
 
         <!-- Load More Button -->
-        <div class="load-more-container" *ngIf="hasMoreThreads && !loading">
+        <div
+          class="load-more-container"
+          *ngIf="hasMoreThreads && !loading && featuredThreads.length > 0"
+        >
           <button
             class="action-btn load-more-btn"
             (click)="loadMoreThreads()"

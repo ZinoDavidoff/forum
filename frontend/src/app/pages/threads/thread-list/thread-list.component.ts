@@ -16,15 +16,24 @@ import { Thread } from "../../../core/models/models";
           <i-lucide name="edit" [size]="18"></i-lucide> New Thread
         </button>
       </div>
-      <div class="threads-list">
+      <div *ngIf="loading" class="text-center">
+        <app-loading-spinner></app-loading-spinner>
+      </div>
+      <div class="threads-list" *ngIf="!loading">
         <app-thread-card
           *ngFor="let thread of threads"
           [thread]="thread"
         ></app-thread-card>
       </div>
-      <div *ngIf="loading" class="text-center">
-        <app-loading-spinner></app-loading-spinner>
-      </div>
+      <app-empty-state
+        *ngIf="!loading && threads.length === 0"
+        [title]="'No threads yet'"
+        [message]="'Be the first one to start a conversation in this category!'"
+        [showActionButton]="true"
+        [actionText]="'Create Thread'"
+        [actionIcon]="'edit'"
+        [onActionClick]="openPostEditor.bind(this)"
+      ></app-empty-state>
     </div>
   `,
   styles: [

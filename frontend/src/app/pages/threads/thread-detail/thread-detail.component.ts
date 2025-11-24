@@ -377,7 +377,10 @@ import { AuthService } from "../../../core/services/auth.service";
               </div>
 
               <div class="comments-section">
-                <div class="comment-sort card" *ngIf="!thread.isLocked">
+                <div
+                  class="comment-sort card"
+                  *ngIf="!thread.isLocked && posts.length > 0"
+                >
                   <button
                     class="sort-btn"
                     [class.active]="selectedSort === 'best'"
@@ -414,6 +417,18 @@ import { AuthService } from "../../../core/services/auth.service";
                   (replyAdded)="onReplyAdded()"
                   (postDeleted)="onPostDeleted($event)"
                 ></app-post-card>
+
+                <app-empty-state
+                  *ngIf="!loadingMore && posts.length === 0"
+                  [title]="'No replies yet'"
+                  [message]="
+                    'Be the first one to share your thoughts on this thread!'
+                  "
+                  [showActionButton]="!thread.isLocked"
+                  [actionText]="'Add Reply'"
+                  [actionIcon]="'message-circle'"
+                  [onActionClick]="toggleReplyBox.bind(this)"
+                ></app-empty-state>
 
                 <!-- Load More Button -->
                 <div

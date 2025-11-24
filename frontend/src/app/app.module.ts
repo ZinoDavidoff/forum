@@ -80,6 +80,7 @@ import { UserCardComponent } from "./shared/components/user-card/user-card.compo
 import { CategoryBadgeComponent } from "./shared/components/category-badge/category-badge.component";
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 import { ConfirmModalComponent } from "./shared/components/confirm-modal/confirm-modal.component";
+import { EmptyStateComponent } from "./shared/components/empty-state/empty-state.component";
 
 // Pipes
 import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
@@ -105,6 +106,7 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
     CategoryBadgeComponent,
     LoadingSpinnerComponent,
     ConfirmModalComponent,
+    EmptyStateComponent,
     TimeAgoPipe,
     CompactNumberPipe,
   ],
