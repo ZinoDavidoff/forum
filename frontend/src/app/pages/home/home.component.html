@@ -259,7 +259,44 @@
 
       <!-- Right Sidebar -->
       <aside class="right-sidebar">
-        <div class="sidebar-widget card">
+        <!-- Category Info (when category is selected) -->
+        <div class="sidebar-widget card" *ngIf="selectedCategory">
+          <h3>{{ selectedCategory.name }}</h3>
+          <p class="small-text">
+            {{ selectedCategory.description || "No description available." }}
+          </p>
+          <div class="community-stats">
+            <div class="stat">
+              <div class="stat-value">
+                {{ selectedCategory.threadCount | compactNumber }}
+              </div>
+              <div class="stat-label">Threads</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">
+                {{ selectedCategory.postCount | compactNumber }}
+              </div>
+              <div class="stat-label">Posts</div>
+            </div>
+          </div>
+          <button
+            class="btn btn-primary w-100"
+            routerLink="/register"
+            *ngIf="!currentUser"
+          >
+            Join Community
+          </button>
+          <button
+            class="btn btn-primary w-100"
+            routerLink="/threads/create"
+            *ngIf="currentUser"
+          >
+            Create Post
+          </button>
+        </div>
+
+        <!-- Community Info (when no category is selected) -->
+        <div class="sidebar-widget card" *ngIf="!selectedCategory">
           <h3>About Community</h3>
           <p class="small-text">
             Welcome to our forum! Connect with others, share experiences, and

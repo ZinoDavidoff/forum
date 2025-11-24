@@ -141,6 +141,10 @@ export class HomeComponent implements OnInit {
       return;
     }
     this.isCreatingPost = true;
+    // Pre-populate category if one is selected via URL query parameter
+    if (this.selectedCategoryId) {
+      this.newPost.categoryId = this.selectedCategoryId;
+    }
   }
 
   collapsePostCreator() {
@@ -161,6 +165,15 @@ export class HomeComponent implements OnInit {
   getCategoryName(categoryId: string): string {
     const category = this.categories.find((c) => c.id === categoryId);
     return category ? category.name : "";
+  }
+
+  get selectedCategory(): Category | null {
+    if (!this.selectedCategoryId) {
+      return null;
+    }
+    return (
+      this.categories.find((c) => c.id === this.selectedCategoryId) || null
+    );
   }
 
   resetPostForm() {
