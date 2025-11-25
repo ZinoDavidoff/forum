@@ -48,8 +48,8 @@ import { UploadModule } from "./modules/upload/upload.module";
           password: configService.get("DB_PASSWORD"),
           database: configService.get("DB_DATABASE"),
           entities: [__dirname + "/**/*.entity{.ts,.js}"],
-          synchronize: true,
-          logging: true,
+          synchronize: configService.get("NODE_ENV") === "development",
+          logging: configService.get("NODE_ENV") === "development",  
         };
       },
     }),
