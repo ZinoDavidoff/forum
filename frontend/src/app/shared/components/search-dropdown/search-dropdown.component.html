@@ -1,0 +1,279 @@
+<div class="search-dropdown" *ngIf="hasResults || isLoading">
+  <div class="search-dropdown-content">
+    <!-- Threads Section -->
+    <div class="search-section" *ngIf="threads.length > 0 || isLoading">
+      <div class="search-section-header">
+        <h3>Threads</h3>
+      </div>
+      <div class="search-section-content">
+        <div
+          *ngFor="let thread of displayedThreads"
+          class="search-item"
+          (click)="navigateToThread(thread)"
+        >
+          <div class="search-item-content">
+            <div class="search-item-header">
+              <div
+                class="search-item-title"
+                [innerHTML]="highlightText(thread.title, searchQuery)"
+              ></div>
+              <span class="search-item-category-badge">{{
+                thread.category.name
+              }}</span>
+            </div>
+            <div class="search-item-meta" *ngIf="thread.content">
+              <span
+                class="search-item-description"
+                [innerHTML]="
+                  highlightText(
+                    truncateText(thread.content, searchQuery, 100),
+                    searchQuery
+                  )
+                "
+              ></span>
+            </div>
+            <div class="search-item-meta">
+              <span class="search-item-author">{{
+                thread.author.username
+              }}</span>
+              <span class="search-item-stats ml-auto">
+                {{ thread.replyCount | compactNumber }} replies
+              </span>
+              <span class="search-item-divider">•</span>
+              <span class="search-item-stats">{{
+                thread.createdAt | timeAgo
+              }}</span>
+            </div>
+          </div>
+        </div>
+        <div
+          *ngIf="threadsTotal > displayedThreads.length"
+          class="search-section-footer"
+        >
+          <button
+            class="action-btn"
+            (click)="onLoadMoreThreads(); $event.stopPropagation()"
+            [disabled]="isLoadingMore.threads"
+          >
+            <i-lucide
+              name="loader-2"
+              [size]="16"
+              *ngIf="isLoadingMore.threads"
+              class="spinner"
+            ></i-lucide>
+            <span *ngIf="!isLoadingMore.threads">
+              View more threads ({{ threadsTotal - displayedThreads.length }}
+              more)
+            </span>
+            <span *ngIf="isLoadingMore.threads">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div
+      class="search-divider"
+      *ngIf="
+        threads.length > 0 &&
+        (categories.length > 0 || posts.length > 0 || profiles.length > 0)
+      "
+    ></div>
+
+    <!-- Categories Section -->
+    <div class="search-section" *ngIf="categories.length > 0 || isLoading">
+      <div class="search-section-header">
+        <h3>Categories</h3>
+      </div>
+      <div class="search-section-content">
+        <div
+          *ngFor="let category of displayedCategories"
+          class="search-item"
+          (click)="navigateToCategory(category)"
+        >
+          <div class="search-item-content">
+            <div
+              class="search-item-title"
+              [innerHTML]="highlightText(category.name, searchQuery)"
+            ></div>
+            <div class="search-item-meta" *ngIf="category.description">
+              <span
+                class="search-item-description"
+                [innerHTML]="
+                  highlightText(
+                    truncateText(category.description, searchQuery, 80),
+                    searchQuery
+                  )
+                "
+              ></span>
+            </div>
+            <div class="search-item-meta">
+              <span class="search-item-stats ml-auto">
+                {{ category.threadCount | compactNumber }} threads •
+                {{ category.postCount | compactNumber }} posts
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          *ngIf="categoriesTotal > displayedCategories.length"
+          class="search-section-footer"
+        >
+          <button
+            class="action-btn"
+            (click)="onLoadMoreCategories(); $event.stopPropagation()"
+            [disabled]="isLoadingMore.categories"
+          >
+            <i-lucide
+              name="loader-2"
+              [size]="16"
+              *ngIf="isLoadingMore.categories"
+              class="spinner"
+            ></i-lucide>
+            <span *ngIf="!isLoadingMore.categories">
+              View more categories ({{
+                categoriesTotal - displayedCategories.length
+              }}
+              more)
+            </span>
+            <span *ngIf="isLoadingMore.categories">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div
+      class="search-divider"
+      *ngIf="categories.length > 0 && (posts.length > 0 || profiles.length > 0)"
+    ></div>
+
+    <!-- Posts Section -->
+    <div class="search-section" *ngIf="posts.length > 0 || isLoading">
+      <div class="search-section-header">
+        <h3>Posts</h3>
+      </div>
+      <div class="search-section-content">
+        <div
+          *ngFor="let post of displayedPosts"
+          class="search-item"
+          (click)="navigateToPost(post)"
+        >
+          <div class="search-item-content">
+            <div class="search-item-title" *ngIf="post.thread">
+              <span
+                [innerHTML]="highlightText(post.thread.title, searchQuery)"
+              ></span>
+            </div>
+            <div
+              class="search-item-description"
+              [innerHTML]="
+                highlightText(
+                  truncateText(post.content, searchQuery, 100),
+                  searchQuery
+                )
+              "
+            ></div>
+            <div class="search-item-meta">
+              <span class="search-item-author">{{ post.author.username }}</span>
+              <span class="search-item-stats ml-auto">
+                {{
+                  post.upvoteCount - post.downvoteCount | compactNumber
+                }}
+                votes
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          *ngIf="postsTotal > displayedPosts.length"
+          class="search-section-footer"
+        >
+          <button
+            class="action-btn"
+            (click)="onLoadMorePosts(); $event.stopPropagation()"
+            [disabled]="isLoadingMore.posts"
+          >
+            <i-lucide
+              name="loader-2"
+              [size]="16"
+              *ngIf="isLoadingMore.posts"
+              class="spinner"
+            ></i-lucide>
+            <span *ngIf="!isLoadingMore.posts">
+              View more posts ({{ postsTotal - displayedPosts.length }} more)
+            </span>
+            <span *ngIf="isLoadingMore.posts">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div
+      class="search-divider"
+      *ngIf="posts.length > 0 && profiles.length > 0"
+    ></div>
+
+    <!-- Profiles Section -->
+    <div class="search-section" *ngIf="profiles.length > 0 || isLoading">
+      <div class="search-section-header">
+        <h3>Profiles</h3>
+      </div>
+      <div class="search-section-content">
+        <div
+          *ngFor="let profile of displayedProfiles"
+          class="search-item search-item-profile"
+          (click)="navigateToProfile(profile)"
+        >
+          <div class="search-item-avatar">
+            <img
+              [src]="profile.avatar || 'assets/default-avatar.svg'"
+              [alt]="profile.username"
+            />
+          </div>
+          <div class="search-item-content">
+            <div
+              class="search-item-title"
+              [innerHTML]="highlightText(profile.username, searchQuery)"
+            ></div>
+            <div class="search-item-meta" *ngIf="profile.fullName">
+              <span
+                [innerHTML]="highlightText(profile.fullName, searchQuery)"
+              ></span>
+            </div>
+            <div class="search-item-meta">
+              <span class="search-item-stats ml-auto">
+                {{ profile.reputation | compactNumber }} reputation •
+                {{ profile.threadCount | compactNumber }} threads •
+                {{ profile.postCount | compactNumber }} posts
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          *ngIf="profilesTotal > displayedProfiles.length"
+          class="search-section-footer"
+        >
+          <button
+            class="action-btn"
+            (click)="onLoadMoreProfiles(); $event.stopPropagation()"
+            [disabled]="isLoadingMore.profiles"
+          >
+            <i-lucide
+              name="loader-2"
+              [size]="16"
+              *ngIf="isLoadingMore.profiles"
+              class="spinner"
+            ></i-lucide>
+            <span *ngIf="!isLoadingMore.profiles">
+              View more profiles ({{ profilesTotal - displayedProfiles.length }}
+              more)
+            </span>
+            <span *ngIf="isLoadingMore.profiles">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

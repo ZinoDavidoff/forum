@@ -10,7 +10,41 @@
 
       <div class="search-bar">
         <i-lucide name="search" [size]="20" class="search-icon"></i-lucide>
-        <input type="text" placeholder="Search..." class="search-input" />
+        <input
+          type="text"
+          placeholder="Search..."
+          class="search-input"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput($event)"
+          (focus)="onSearchFocus()"
+        />
+        <button
+          *ngIf="searchQuery.length > 0"
+          class="search-clear-btn"
+          (click)="clearSearch()"
+          type="button"
+          aria-label="Clear search"
+        >
+          <i-lucide name="x" [size]="18"></i-lucide>
+        </button>
+        <app-search-dropdown
+          *ngIf="showDropdown"
+          [searchQuery]="searchQuery"
+          [threads]="searchResults.threads"
+          [categories]="searchResults.categories"
+          [posts]="searchResults.posts"
+          [profiles]="searchResults.profiles"
+          [threadsTotal]="searchTotals.threads"
+          [categoriesTotal]="searchTotals.categories"
+          [postsTotal]="searchTotals.posts"
+          [profilesTotal]="searchTotals.profiles"
+          [isLoading]="isLoading"
+          (loadMoreThreads)="onLoadMoreThreads()"
+          (loadMoreCategories)="onLoadMoreCategories()"
+          (loadMorePosts)="onLoadMorePosts()"
+          (loadMoreProfiles)="onLoadMoreProfiles()"
+          (closeDropdown)="showDropdown = false"
+        ></app-search-dropdown>
       </div>
 
       <div class="header-actions">

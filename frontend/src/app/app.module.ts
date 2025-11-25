@@ -86,6 +86,7 @@ import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loa
 import { ConfirmModalComponent } from "./shared/components/confirm-modal/confirm-modal.component";
 import { EmptyStateComponent } from "./shared/components/empty-state/empty-state.component";
 import { ErrorStateComponent } from "./shared/components/error-state/error-state.component";
+import { SearchDropdownComponent } from "./shared/components/search-dropdown/search-dropdown.component";
 
 // Pipes
 import { TimeAgoPipe } from "./shared/pipes/time-ago.pipe";
@@ -113,6 +114,7 @@ import { CompactNumberPipe } from "./shared/pipes/compact-number.pipe";
     ConfirmModalComponent,
     EmptyStateComponent,
     ErrorStateComponent,
+    SearchDropdownComponent,
     TimeAgoPipe,
     CompactNumberPipe,
   ],

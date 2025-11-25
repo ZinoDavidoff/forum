@@ -30,7 +30,7 @@
 }
 
 .logo-icon {
-  padding: .25rem;
+  padding: 0.25rem;
   background: var(--primary);
   color: var(--bg-primary);
   border-radius: 50%;
@@ -46,6 +46,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  z-index: 1001;
 }
 
 .search-icon {
@@ -70,6 +71,33 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   box-shadow: var(--shadow-sm);
+}
+
+.search-bar:has(.search-clear-btn) .search-input {
+  padding-right: 3rem;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.search-clear-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .search-input::placeholder {

@@ -347,7 +347,10 @@ import { AuthService } from "../../../core/services/auth.service";
         background: var(--primary-100);
         color: var(--primary);
         border-radius: 4px;
+        font-size: 0.75rem;
         font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .dot {

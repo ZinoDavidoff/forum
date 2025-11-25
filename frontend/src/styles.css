@@ -160,6 +160,11 @@ i-lucide {
   line-height: 0;
 }
 
+mark {
+  background-color: var(--primary-100);
+  color: var(--primary-500);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
