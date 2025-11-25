@@ -3,7 +3,4 @@ services:
     name: mommy-forum-backend
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
-    envVars:
-      - key: NODE_ENV
-        value: production
+    startCommand: NODE_ENV=production npm run start:prod
